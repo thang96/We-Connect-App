@@ -13,6 +13,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource-variable/public-sans": "^5.1.2",
+    "@hookform/resolvers": "^4.1.0",
     "@mui/icons-material": "^6.4.4",
     "@mui/material": "^6.4.4",
     "@reduxjs/toolkit": "^2.5.1",
@@ -27,7 +28,8 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.1.5"
+    "react-router-dom": "^7.1.5",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

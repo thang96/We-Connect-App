@@ -11,9 +11,7 @@ const OTPVerifyPage = () => {
   const { control } = useForm();
   const dispatch = useDispatch();
   
-  useEffect(() => {
-    dispatch(login({ accessToken: "123", refreshToken: "456" }));
-  }, []);
+ 
 
   return (
     <div>

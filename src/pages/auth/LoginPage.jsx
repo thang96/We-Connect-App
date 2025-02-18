@@ -2,7 +2,7 @@ import FormField from "@components/FormField";
 import TextInput from "@components/FormInput/TextInput";
 import { Alert, Button, CircularProgress } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom"; // Corrected useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useLoginMutation } from "@services/rootApi";
@@ -13,6 +13,7 @@ import { openSnackBar } from "@redux/slices/snackbarSlice";
 const LoginPage = () => {
   const [login, { data = [], isLoading, isError, error, isSuccess }] =
     useLoginMutation();
+    
   const formSchema = object()
     .shape({
       email: string()
@@ -29,15 +30,20 @@ const LoginPage = () => {
     control,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm({
     resolver: yupResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
   const onSubmit = (formData) => {
     login(formData);
   };
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Corrected useNavigate
+  const navigate = useNavigate();
   useEffect(() => {
     if (isError) {
       dispatch(openSnackBar({ type: "error", message: error?.data?.message }));
@@ -45,9 +51,13 @@ const LoginPage = () => {
 
     if (isSuccess) {
       dispatch(openSnackBar({ message: data?.message }));
-      navigate("/verify-otp");
+      navigate("/verify-otp", {
+        state: {
+          email: getValues("email"),
+        },
+      });
     }
-  }, [data, dispatch, error, isError, isSuccess, navigate]);
+  }, [data, dispatch, error, isError, isSuccess, navigate, getValues]);
 
   return (
     <div>
@@ -63,6 +73,7 @@ const LoginPage = () => {
           control={control}
           Component={TextInput}
           error={errors.email}
+          autoComplete="email" // Added autoComplete attribute
         />
         <FormField
           name={"password"}
@@ -71,10 +82,15 @@ const LoginPage = () => {
           Component={TextInput}
           type="password"
           error={errors.password}
+          autoComplete="current-password" // Added autoComplete attribute
         />
         {isError && <Alert severity="error">{error?.data?.message}</Alert>}
         <Button variant="contained" type="submit">
-          {isLoading ? <CircularProgress size={"16px"} color="white" /> : "Sign in"}
+          {isLoading ? (
+            <CircularProgress size={"16px"} color="inherit" />
+          ) : (
+            "Sign in"
+          )}
         </Button>
       </form>
       <p className="mt-4">

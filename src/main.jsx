@@ -2,7 +2,7 @@
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ModalProvider from "@context/ModalProvider";
+// import ModalProvider from "@context/ModalProvider";
 import RootLayout from "@pages/RootLayout";
 import HomePage from "@pages/HomePage";
 import { ThemeProvider } from "@emotion/react";
@@ -12,35 +12,43 @@ import AuthLayout from "@pages/auth/AuthLayout";
 import LoginPage from "@pages/auth/LoginPage";
 import OTPVerifyPage from "@pages/auth/OTPVerifyPage";
 import { Provider } from "react-redux";
-import { store } from "@redux/store";
+import { persistor, store } from "@redux/store";
+import ProtectedLayout from "@pages/ProtectedLayout";
+import MessagePage from "@pages/MessagePage";
+import { PersistGate } from "redux-persist/integration/react";
+import Dialog from "@components/Dialog";
 
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
       {
-        path: "/",
+        element: <ProtectedLayout />,
         children: [
           {
             path: "/",
             element: <HomePage />,
           },
           {
-            element: <AuthLayout />,
-            children: [
-              {
-                path: "/register",
-                element: <RegisterPage />,
-              },
-              {
-                path: "/login",
-                element: <LoginPage />,
-              },
-              {
-                path: "/verify-otp",
-                element: <OTPVerifyPage />,
-              },
-            ],
+            path: "/message",
+            element: <MessagePage />,
+          },
+        ],
+      },
+      {
+        element: <AuthLayout />,
+        children: [
+          {
+            path: "/register",
+            element: <RegisterPage />,
+          },
+          {
+            path: "/login",
+            element: <LoginPage />,
+          },
+          {
+            path: "/verify-otp",
+            element: <OTPVerifyPage />,
           },
         ],
       },
@@ -51,11 +59,14 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <Provider store={store}>
-    <ThemeProvider theme={theme}>
-      <ModalProvider>
-        <RouterProvider router={router} />
-      </ModalProvider>
-    </ThemeProvider>
+    <PersistGate loading={<p>Loading...</p>} persistor={persistor}>
+      <ThemeProvider theme={theme}>
+        {/* <ModalProvider> */}
+          <RouterProvider router={router} />
+          <Dialog/>
+        {/* </ModalProvider> */}
+      </ThemeProvider>
+    </PersistGate>
   </Provider>,
   // </StrictMode>,
 );

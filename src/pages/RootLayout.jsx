@@ -10,31 +10,24 @@ import { closeSnackBar } from "@redux/slices/snackbarSlice";
 const RootLayout = () => {
   const { message, open, type } = useSelector((state) => state.sbackbar);
   const dispatch = useDispatch();
-  console.log(type);
-  
+
   return (
-    <>
-      <div className="">
-        <Suspense fallback={<Loading />}>
-          <Outlet />
-        </Suspense>
-        <Snackbar
-          open={open}
-          autoHideDuration={3000}
-          onClose={() => {
-            dispatch(closeSnackBar());
-          }}
-        >
-          <Alert
-            severity={type}
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {message}
-          </Alert>
-        </Snackbar>
-      </div>
-    </>
+    <div className="text-dark-100">
+      <Suspense fallback={<Loading />}>
+        <Outlet />
+      </Suspense>
+      <Snackbar
+        open={open}
+        autoHideDuration={3000}
+        onClose={() => {
+          dispatch(closeSnackBar());
+        }}
+      >
+        <Alert severity={type} variant="filled" sx={{ width: "100%" }}>
+          {message}
+        </Alert>
+      </Snackbar>
+    </div>
   );
 };
 

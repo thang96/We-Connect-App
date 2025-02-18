@@ -1,6 +1,6 @@
 import FormField from "@components/FormField";
 import TextInput from "@components/FormInput/TextInput";
-import { Alert, Button } from "@mui/material";
+import { Alert, Button, CircularProgress } from "@mui/material";
 import { openSnackBar } from "@redux/slices/snackbarSlice";
 import { useRegisterMutation } from "@services/rootApi";
 import { useEffect } from "react";
@@ -33,8 +33,12 @@ const RegisterPage = () => {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(formSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+    },
   });
-  // console.log(errors);
 
   const dispatch = useDispatch();
 
@@ -62,7 +66,6 @@ const RegisterPage = () => {
           label={"Full Name"}
           control={control}
           Component={TextInput}
-          value=""
           error={errors.fullName}
         />
         <FormField
@@ -70,7 +73,6 @@ const RegisterPage = () => {
           label={"Email"}
           control={control}
           Component={TextInput}
-          value=""
           error={errors.email}
         />
         <FormField
@@ -79,11 +81,10 @@ const RegisterPage = () => {
           control={control}
           Component={TextInput}
           type="password"
-          value=""
           error={errors.password}
         />
         <Button disabled={isLoading} type="submit" variant="contained">
-          Sign up
+          {isLoading ? <CircularProgress size={"16px"} color="inherit" /> : "Sign up"}
         </Button>
         {isError && <Alert severity="error">{error.data.message}</Alert>}
       </form>

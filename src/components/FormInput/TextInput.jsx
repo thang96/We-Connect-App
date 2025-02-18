@@ -16,6 +16,7 @@ const TextInput = ({ onChange, value, name, type = "text", error }) => {
         onChange={onChange}
         type={type}
         error={error}
+        autoComplete="on"
       />
     </div>
   );

@@ -1,13 +1,12 @@
 import { Chip, Stack } from "@mui/material";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 
-const ImageUploader = () => {
-  const [image, setImage] = useState(null);
+const ImageUploader = ({ image, setImage }) => {
+  
   const onDrop = useCallback((acceptedFiles) => {
-    console.log(acceptedFiles);
     setImage(acceptedFiles[0]);
-  }, []);
+  }, [setImage]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

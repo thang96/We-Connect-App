@@ -1,5 +1,4 @@
-import { useUseLogout } from "@hooks/useUseLogout";
-import { useUserInfo } from "@hooks/useUserInfo";
+import { useUseLogout, useUserInfo } from "@hooks/index";
 import { Menu as MenuIcon, Notifications, Search } from "@mui/icons-material";
 import {
   AppBar,

@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { closeSnackBar } from "@redux/slices/snackbarSlice";
 
 const RootLayout = () => {
-  const { message, open, type } = useSelector((state) => state.sbackbar);
+  const { message, open, type } = useSelector((state) => state.snackbar);
   const dispatch = useDispatch();
 
   return (

@@ -34,7 +34,7 @@ const persistedReducer = persistReducer(
   persistConfig,
   combineReducers({
     auth: authSlice,
-    sbackbar: snackbarReducer,
+    snackbar: snackbarReducer,
     settings: settingsReducer,
     dialog: dialogReducer,
     [rootApi.reducerPath]: rootApi.reducer,

@@ -4,14 +4,13 @@ import { Avatar, Button } from "@mui/material";
 
 const Post = ({
   fullName,
-  createAt,
+  createdAt,
   content = "",
   image = "",
   likes = [],
   comments = [],
 }) => {
-  const date = new Date(createAt);
-  console.log(createAt);
+  const date = new Date(createdAt);
   
   return (
     <div className="card">
@@ -26,14 +25,14 @@ const Post = ({
       </div>
 
       <p className="mb-1">{content}</p>
-      {image && <img src={image} />}
+      {image && <img src={image} className="object-contain mx-auto" />}
       <div className="my-2 flex justify-between">
         <div className="flex gap-1 text-sm">
           <ThumbUp fontSize="small" className="text-primary-main" />
           <p>{likes.length}</p>
         </div>
         <div className="text-sm">
-          <p>{comments.length}comments</p>
+          <p>{comments.length} comments</p>
         </div>
       </div>
       <div className="border-dark-300 flex border-t p-1">

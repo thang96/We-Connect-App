@@ -11,6 +11,7 @@ const baseQuery = fetchBaseQuery({
     }
     return headers;
   },
+  // mode: 'no-cors', // Added mode: 'no-cors' for development purposes
 });
 
 const baseQueryWithReAuth = async (args, api, extraOptions) => {
@@ -54,6 +55,7 @@ const baseQueryWithReAuth = async (args, api, extraOptions) => {
 export const rootApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReAuth,
+  tagTypes: ["Post", "Users"], // Added tagTypes
   endpoints: (builder) => {
     return {
       register: builder.mutation({
@@ -110,14 +112,36 @@ export const rootApi = createApi({
             body: formData,
           };
         },
+        invalidatesTags: ["Post"], // Invalidate the Post tag
       }),
 
       getPost: builder.query({
-        query: () => {
+        query: ({ limit, offset } = {}) => {
           return {
             url: "/posts",
+            method: "GET",
+            params: { limit, offset },
           };
         },
+        providesTags: ["Post"], // Provide the Post tag
+      }),
+
+      searchUsers: builder.mutation({
+        query: ({ limit, offset, searchQuery } = {}) => {
+          const encodeQuery = encodeURIComponent(searchQuery.trim());
+          return {
+            url: `/search/users/${encodeQuery}`,
+            method: "POST",
+            params: { limit, offset },
+          };
+        },
+        providesTags: (result) =>
+          result
+            ? [
+                ...result.users.map(({ _id }) => ({ type: "Users", id: _id })),
+                { type: "Users", id: "LIST" },
+              ]
+            : [{ type: "Users", id: "LIST" }],
       }),
     };
   },
@@ -131,4 +155,5 @@ export const {
   useGetAuthUserQuery,
   useCreatePostMutation,
   useGetPostQuery,
+  useSearchUsersMutation,
 } = rootApi;

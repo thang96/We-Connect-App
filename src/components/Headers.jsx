@@ -15,15 +15,17 @@ import {
 import { toggleDrawer } from "@redux/slices/settingsSlice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [searchTemp, setSearchTemp] = useState("");
   const userInfo = useUserInfo();
   const { logoutUser } = useUseLogout();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const renderMenu = () => {
     return (
       <Menu
@@ -55,8 +57,8 @@ const Header = () => {
 
   return (
     <div>
-      <AppBar color="white" position="static" className="py-4">
-        <Toolbar className="!min-h-fit justify-between">
+      <AppBar color="white" position="static">
+        <Toolbar className="container !min-h-fit justify-between py-0">
           {isMobile ? (
             <IconButton onClick={() => dispatch(toggleDrawer())}>
               <MenuIcon />
@@ -80,6 +82,19 @@ const Header = () => {
                     ".MuiInputBase-root::before": {
                       display: "none",
                     },
+                  }}
+                  value={searchTemp}
+                  onChange={(e) => {
+                    setSearchTemp(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      navigate("./search/Users", {
+                        state: {
+                          searchTemp,
+                        },
+                      });
+                    }
                   }}
                 />
               </div>

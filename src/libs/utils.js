@@ -11,6 +11,5 @@ export const timeSince = (dateString) => {
   const minutes = Math.floor((diffInSeconds % 3600) / 60);
   const seconds = diffInSeconds % 60;
 
-  return `${days} ngày, ${hours} giờ, ${minutes} phút, ${seconds} giây trước`;
+  return `${days !== 0 ? `${days} ngày,` : ""} ${hours} giờ, ${minutes} phút, ${seconds} giây trước`;
 };
-

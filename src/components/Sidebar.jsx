@@ -1,4 +1,4 @@
-import { useUseDetectLayout } from "@hooks/index";
+import { useDetectLayout } from "@hooks/index";
 import { HomeOutlined, Hub, Message, People } from "@mui/icons-material";
 import { Drawer, List, ListSubheader, styled } from "@mui/material";
 import { toggleDrawer } from "@redux/slices/settingsSlice";
@@ -48,7 +48,7 @@ const SideBarContent = () => {
 };
 
 const Sidebar = () => {
-  const {isMediumLayout} = useUseDetectLayout();
+  const {isMediumLayout} = useDetectLayout();
   const isShowDrawer = useSelector((store) => store.settings.isShowDrawer);
   const dispatch = useDispatch();
 

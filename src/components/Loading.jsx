@@ -1,7 +1,13 @@
+import { motion } from "motion/react";
 const Loading = () => {
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-900 border-t-slate-200" />
+    <div className="flex min-h-[100px] items-center justify-center">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity }}
+      >
+        <div className="border-primary-main h-10 w-10 rounded-full border-4 border-t-transparent"></div>
+      </motion.div>
     </div>
   );
 };

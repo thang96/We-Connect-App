@@ -1,4 +1,5 @@
 import Header from "@components/Headers";
+import Loading from "@components/Loading";
 import { saveUseInfo } from "@redux/slices/authSlice";
 import { useGetAuthUserQuery } from "@services/rootApi";
 import { useEffect } from "react";
@@ -15,11 +16,11 @@ const ProtectedLayout = () => {
   }, [responce.isSuccess, responce.data, dispatch]);
 
   if (responce.isLoading) {
-    return <p>Loading...</p>;
+    return <Loading />;
   }
 
   return responce.data ? (
-    <div className="">
+    <div className="bg-dark-200">
       <Header />
       <Outlet />
     </div>

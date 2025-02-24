@@ -1,5 +1,6 @@
 import Header from "@components/Headers";
 import Loading from "@components/Loading";
+import SocketProvider from "@context/SocketProvider";
 import { saveUseInfo } from "@redux/slices/authSlice";
 import { useGetAuthUserQuery } from "@services/rootApi";
 import { useEffect } from "react";
@@ -20,10 +21,12 @@ const ProtectedLayout = () => {
   }
 
   return responce.data ? (
-    <div className="bg-dark-200">
-      <Header />
-      <Outlet />
-    </div>
+    <SocketProvider>
+      <div className="bg-dark-200">
+        <Header />
+        <Outlet />
+      </div>
+    </SocketProvider>
   ) : (
     <div></div>
   );

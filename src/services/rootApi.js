@@ -16,36 +16,37 @@ const baseQuery = fetchBaseQuery({
 
 const baseQueryWithReAuth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
-  if (
-    result?.error?.status === 401 ||
-    result?.error?.data?.messsage === "Token has expired"
-  ) {
-    const refreshToken = api.getState().auth.refreshToken;
-    if (refreshToken) {
-      const refreshResult = await baseQuery(
-        {
-          url: "/refresh-token",
-          body: { refreshToken },
-          method: "POST",
-        },
-        api,
-        extraOptions,
-      );
-
-      const newAccessToken = refreshResult?.data?.accessToken;
-
-      if (newAccessToken) {
-        api.dispatch(
-          login({
-            accessToken: newAccessToken,
-            refreshToken,
-          }),
+  if (result?.error?.status === 401) {
+    if (result?.error?.data?.messsage === "Token has expired") {
+      const refreshToken = api.getState().auth.refreshToken;
+      if (refreshToken) {
+        const refreshResult = await baseQuery(
+          {
+            url: "/refresh-token",
+            body: { refreshToken },
+            method: "POST",
+          },
+          api,
+          extraOptions,
         );
-        result = await baseQuery(args, api, extraOptions);
-      } else {
-        api.dispatch(logout());
-        window.location.href = "/login";
+
+        const newAccessToken = refreshResult?.data?.accessToken;
+
+        if (newAccessToken) {
+          api.dispatch(
+            login({
+              accessToken: newAccessToken,
+              refreshToken,
+            }),
+          );
+          result = await baseQuery(args, api, extraOptions);
+        } else {
+          api.dispatch(logout());
+          window.location.href = "/login";
+        }
       }
+    } else {
+      window.location.href = "/login";
     }
   }
 
@@ -55,7 +56,7 @@ const baseQueryWithReAuth = async (args, api, extraOptions) => {
 export const rootApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReAuth,
-  tagTypes: ["Post", "Users"], // Added tagTypes
+  tagTypes: ["Post", "Users", "FriendPendingRequest"], // Added tagTypes
   endpoints: (builder) => {
     return {
       register: builder.mutation({
@@ -175,6 +176,38 @@ export const rootApi = createApi({
               ]
             : [{ type: "FriendPendingRequest", id: "LIST" }],
       }),
+
+      accepntFriendRequest: builder.mutation({
+        query: (userId) => {
+          return {
+            url: "/friends/accept",
+            method: "POST",
+            body: {
+              friendId: userId,
+            },
+          };
+        },
+        invalidatesTags: (result, error, args) => [
+          { type: "Users", id: args },
+          { type: "FriendPendingRequest", id: args },
+        ], // Invalidate the Users tag
+      }),
+
+      cancelFriendRequest: builder.mutation({
+        query: (userId) => {
+          return {
+            url: "/friends/cancel",
+            method: "POST",
+            body: {
+              friendId: userId,
+            },
+          };
+        },
+        invalidatesTags: (result, error, args) => [
+          { type: "Users", id: args },
+          { type: "FriendPendingRequest", id: args },
+        ], // Invalidate the Users tag
+      }),
     };
   },
 });
@@ -190,4 +223,6 @@ export const {
   useSearchUsersQuery,
   useSendFriendRequestMutation,
   useGetPenddingFriendRequestQuery,
+  useAccepntFriendRequestMutation,
+  useCancelFriendRequestMutation,
 } = rootApi;

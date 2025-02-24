@@ -1,8 +1,20 @@
+import { socket } from "@context/SocketProvider";
 import { Check, Close } from "@mui/icons-material";
-import { Avatar, Button } from "@mui/material";
-import { useGetPenddingFriendRequestQuery } from "@services/rootApi";
+import { Avatar } from "@mui/material";
+import {
+  useAccepntFriendRequestMutation,
+  useCancelFriendRequestMutation,
+  useGetPenddingFriendRequestQuery,
+} from "@services/rootApi";
+import { useEffect } from "react";
+import ButtonLoading from "./ButtonLoading";
 
-const FriendRequestItems = ({ fullName }) => {
+const FriendRequestItems = ({ fullName, id }) => {
+  const [accepntFriendRequest, { data: acceptData, isLoading: isAccepting }] =
+    useAccepntFriendRequestMutation();
+  const [cancelFriendRequest, { data: cancelData, isLoading: isCanceling }] =
+    useCancelFriendRequestMutation();
+
   return (
     <div>
       <div className="flex items-center !space-x-1">
@@ -12,26 +24,54 @@ const FriendRequestItems = ({ fullName }) => {
         <p>{fullName}</p>
       </div>
       <div className="mt-2 flex !space-x-1">
-        <Button variant="contained" size="small">
-          <Check className="mr-1" fontSize="small" />
-          Accept
-        </Button>
-        <Button variant="outlined" size="small">
-          <Close className="mr-1" fontSize="small" />
-          Cancel
-        </Button>
+        <ButtonLoading
+          isLoading={isAccepting}
+          icon={<Check className="mr-1" fontSize="small" />}
+          onClick={() => {
+            accepntFriendRequest(id);
+          }}
+          variant={"contained"}
+          title={"Accept"}
+          size={"small"}
+        />
+        <ButtonLoading
+          isLoading={isCanceling}
+          icon={<Close className="mr-1" fontSize="small" />}
+          onClick={() => {
+            cancelFriendRequest(id);
+          }}
+          title={"Cancel"}
+          size={"small"}
+        />
       </div>
     </div>
   );
 };
 
 const FriendRequests = () => {
-  const { data = [], isFetching } = useGetPenddingFriendRequestQuery();
+  const { data = [], refetch } = useGetPenddingFriendRequestQuery();
   const renderFriendRequestItems = () => {
     return data.map((user) => (
-      <FriendRequestItems fullName={user?.fullName} key={user?._id} />
+      <FriendRequestItems
+        key={user?._id}
+        fullName={user?.fullName}
+        id={user?._id}
+      />
     ));
   };
+
+  useEffect(() => {
+    socket.on("friendRequestsReceived", () => {
+      console.log("friendRequestsReceived", data);
+      if (data.from) {
+        refetch();
+      }
+    });
+    return () => {
+      socket.off("friendRequestsReceived");
+    };
+  }, [data, refetch]);
+
   return (
     <div className="card">
       <p className="mb-4 font-bold">FriendRequests</p>

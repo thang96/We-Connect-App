@@ -1,8 +1,13 @@
 import { Check, Close, MessageOutlined, PersonAdd } from "@mui/icons-material";
-import { Avatar, Button, CircularProgress } from "@mui/material";
-import { useSendFriendRequestMutation } from "@services/rootApi";
+import { Avatar } from "@mui/material";
+import {
+  useAccepntFriendRequestMutation,
+  useCancelFriendRequestMutation,
+  useSendFriendRequestMutation,
+} from "@services/rootApi";
 import { Link } from "react-router-dom";
-import Loading from "./Loading";
+import { socket } from "@context/SocketProvider";
+import ButtonLoading from "./ButtonLoading";
 
 const UserCard = ({
   id,
@@ -12,58 +17,78 @@ const UserCard = ({
   requestReceived,
 }) => {
   const [sendFriendRequest, { isLoading }] = useSendFriendRequestMutation();
-
+  const [accepntFriendRequest, { isLoading: isAccepting }] =
+    useAccepntFriendRequestMutation();
+  const [cancelFriendRequest, { isLoading: isCanceling }] =
+    useCancelFriendRequestMutation();
   const getActionButtons = () => {
     if (isFriend) {
       return (
-        <Button variant="contained" size="small">
-          <MessageOutlined className="mr-1" fontSize="small" />
-          Message
-        </Button>
+        <ButtonLoading
+          onClick={() => {}}
+          variant={"contained"}
+          title={"Request Sent"}
+          size={"small"}
+          isLoading={isLoading}
+          icon={<MessageOutlined className="mr-1" fontSize="small" />}
+        />
       );
     }
 
     if (requestSent) {
       return (
-        <Button variant="contained" size="small">
-          {isLoading ? (
-            <Loading />
-          ) : (
-            <Check className="mr-1" fontSize="small" />
-          )}
-          Request Sent
-        </Button>
+        <ButtonLoading
+          disabled={requestSent}
+          onClick={() => {}}
+          variant={"contained"}
+          title={"Request Sent"}
+          size={"small"}
+          isLoading={isLoading}
+          icon={<Check className="mr-1" fontSize="small" />}
+        />
       );
     }
 
     if (requestReceived) {
       return (
         <div>
-          <Button variant="contained" size="small">
-            <Check className="mr-1" fontSize="small" />
-            Accept
-          </Button>
-          <Button variant="contained" size="small">
-            <Close className="mr-1" fontSize="small" />
-            Cancel
-          </Button>
+          <ButtonLoading
+            onClick={() => accepntFriendRequest(id)}
+            variant={"contained"}
+            title={"Accept"}
+            size={"small"}
+            isLoading={isAccepting}
+            icon={<Check className="mr-1" fontSize="small" />}
+          />
+          <ButtonLoading
+            onClick={() => cancelFriendRequest(id)}
+            variant={"contained"}
+            title={"Cancel"}
+            size={"small"}
+            isLoading={isCanceling}
+            icon={<Close className="mr-1" fontSize="small" />}
+          />
         </div>
       );
     }
 
     return (
-      <Button
-        onClick={() => sendFriendRequest(id)}
-        variant="outlined"
-        size="small"
-      >
-        {isLoading ? (
-          <CircularProgress className="mr-1 animate-spin" size={"16px"} />
-        ) : (
-          <PersonAdd className="mr-1" fontSize="small" />
-        )}
-        Add Friend
-      </Button>
+      <ButtonLoading
+        isLoading={isLoading}
+        icon={<PersonAdd className="mr-1" fontSize="small" />}
+        onClick={async () => {
+          await sendFriendRequest(id)
+            .unwrap()
+            .then(() => {
+              socket.emit("friendRequestSent", {
+                receiverId: id,
+              });
+            });
+        }}
+        variant={"outlined"}
+        title={"Add Friend"}
+        size={"small"}
+      />
     );
   };
 

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "@emotion/react";
 import { useMediaQuery } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useGetPostQuery } from "@services/rootApi";
+import { useGetPostQuery, useSearchUsersQuery } from "@services/rootApi";
 import { throttle } from "lodash";
 
 export const useUserInfo = () => {
@@ -59,6 +59,41 @@ export const useLazyLoad = () => {
   useInfinitedScroll({ hasMore, isFetching, loadMore });
 
   return { posts, hasMore, isLoading, isFetching, loadMore };
+};
+
+export const useLazyLoadSearchUsers = ({ searchQuery }) => {
+  const [offsetUsers, setOffsetUsers] = useState(0);
+  const limitUsers = 10;
+  const [users, setUsers] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
+  const previousDataRef = useRef();
+  const { data, isLoading, isFetching, isSuccess } = useSearchUsersQuery({
+    limit: limitUsers,
+    offset: offsetUsers,
+    searchQuery: searchQuery,
+  });
+
+  useEffect(() => {
+    if (
+      isSuccess &&
+      Array.isArray(data?.users) &&
+      previousDataRef.current !== data?.users
+    ) {
+      if (data?.users?.length === 0 && data?.offset < data?.total) {
+        setHasMore(false);
+        return;
+      }
+      previousDataRef.current = data?.users;
+      setUsers(data.users);
+    }
+  }, [isSuccess, data]);
+  const loadMore = useCallback(() => {
+    setOffsetUsers((prevOffset) => prevOffset + limitUsers);
+  }, []);
+
+  useInfinitedScroll({ hasMore, isFetching, loadMore });
+ 
+  return { users, hasMore, isLoading, isFetching, loadMore };
 };
 
 export const useInfinitedScroll = ({

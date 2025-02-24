@@ -69,7 +69,17 @@ const Header = () => {
                 <img className="h-8 w-8" src="/weconnect-logo.png" alt="" />
               </Link>
               <div className="flex items-center gap-1">
-                <Search />
+                <div
+                  onClick={() => {
+                    navigate("./search/Users", {
+                      state: {
+                        searchTemp,
+                      },
+                    });
+                  }}
+                >
+                  <Search className="hover:text-primary-main cursor-pointer" />
+                </div>
                 <TextField
                   variant="standard"
                   slotProps={{

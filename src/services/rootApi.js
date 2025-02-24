@@ -126,12 +126,12 @@ export const rootApi = createApi({
         providesTags: ["Post"], // Provide the Post tag
       }),
 
-      searchUsers: builder.mutation({
+      searchUsers: builder.query({
         query: ({ limit, offset, searchQuery } = {}) => {
           const encodeQuery = encodeURIComponent(searchQuery.trim());
           return {
             url: `/search/users/${encodeQuery}`,
-            method: "POST",
+            method: "GET",
             params: { limit, offset },
           };
         },
@@ -142,6 +142,38 @@ export const rootApi = createApi({
                 { type: "Users", id: "LIST" },
               ]
             : [{ type: "Users", id: "LIST" }],
+      }),
+
+      sendFriendRequest: builder.mutation({
+        query: (userId) => {
+          return {
+            url: "/friends/request",
+            method: "POST",
+            body: {
+              friendId: userId,
+            },
+          };
+        },
+        invalidatesTags: ["Users"], // Invalidate the Users tag
+      }),
+
+      getPenddingFriendRequest: builder.query({
+        query: () => {
+          return {
+            url: "/friends/pending",
+            method: "get",
+          };
+        },
+        providesTags: (result) =>
+          result
+            ? [
+                ...result.map(({ _id }) => ({
+                  type: "FriendPendingRequest",
+                  id: _id,
+                })),
+                { type: "FriendPendingRequest", id: "LIST" },
+              ]
+            : [{ type: "FriendPendingRequest", id: "LIST" }],
       }),
     };
   },
@@ -155,5 +187,7 @@ export const {
   useGetAuthUserQuery,
   useCreatePostMutation,
   useGetPostQuery,
-  useSearchUsersMutation,
+  useSearchUsersQuery,
+  useSendFriendRequestMutation,
+  useGetPenddingFriendRequestQuery,
 } = rootApi;

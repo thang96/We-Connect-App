@@ -17,10 +17,10 @@ const LoginPage = () => {
   const formSchema = object()
     .shape({
       email: string()
-        // .matches(
-        //   /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/,
-        //   "Địa chỉ email không đúng",
-        // )
+        .matches(
+          /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/,
+          "Địa chỉ email không đúng",
+        )
         .required(),
       password: string().required("Password không được để trống"),
     })

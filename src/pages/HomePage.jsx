@@ -7,8 +7,8 @@ const HomePage = () => {
   return (
     <div className="container">
       <Sidebar />
-      <div className="flex flex-1 flex-col items-center justify-center gap-3">
-        <div className="max-w-[1/3vw]">
+      <div className="flex flex-col flex-1 items-center justify-start w-[100%]">
+        <div className="">
           <PostCreation />
           <PostList />
         </div>

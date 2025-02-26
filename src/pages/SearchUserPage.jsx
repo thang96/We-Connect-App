@@ -12,23 +12,23 @@ const SearchUserPage = () => {
     searchQuery,
   });
 
-  // useEffect(() => {
-  //   if (!searchQuery) return;
+  useEffect(() => {
+    if (!searchQuery) return;
 
-  //   const checkAndLoadMore = () => {
-  //     const contentHeight = document.documentElement.scrollHeight;
-  //     const viewportHeight = window.innerHeight;
-  //     if (contentHeight <= viewportHeight && !isFetching) {
-  //       loadMore();
-  //     }
-  //   };
+    const checkAndLoadMore = () => {
+      const contentHeight = document.documentElement.scrollHeight;
+      const viewportHeight = window.innerHeight;
+      if (contentHeight <= viewportHeight && !isFetching) {
+        loadMore();
+      }
+    };
 
-  //   checkAndLoadMore(); // Initial check
-  //   window.addEventListener("resize", checkAndLoadMore);
-  //   return () => {
-  //     window.removeEventListener("resize", checkAndLoadMore);
-  //   };
-  // }, [isFetching, loadMore, searchQuery]);
+    checkAndLoadMore(); // Initial check
+    window.addEventListener("resize", checkAndLoadMore);
+    return () => {
+      window.removeEventListener("resize", checkAndLoadMore);
+    };
+  }, [isFetching, loadMore, searchQuery]);
 
   const renderUsers = () => {
     return (users || []).map((user) => (
@@ -42,7 +42,7 @@ const SearchUserPage = () => {
       />
     ));
   };
-
+  
   return isLoading ? (
     <Loading />
   ) : (

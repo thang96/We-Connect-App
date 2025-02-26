@@ -10,9 +10,9 @@ import { useEffect } from "react";
 import ButtonLoading from "./ButtonLoading";
 
 const FriendRequestItems = ({ fullName, id }) => {
-  const [accepntFriendRequest, { data: acceptData, isLoading: isAccepting }] =
+  const [accepntFriendRequest, { isLoading: isAccepting }] =
     useAccepntFriendRequestMutation();
-  const [cancelFriendRequest, { data: cancelData, isLoading: isCanceling }] =
+  const [cancelFriendRequest, { isLoading: isCanceling }] =
     useCancelFriendRequestMutation();
 
   return (
@@ -27,8 +27,8 @@ const FriendRequestItems = ({ fullName, id }) => {
         <ButtonLoading
           isLoading={isAccepting}
           icon={<Check className="mr-1" fontSize="small" />}
-          onClick={() => {
-            accepntFriendRequest(id);
+          onClick={async () => {
+            await accepntFriendRequest(id).unwrap();
           }}
           variant={"contained"}
           title={"Accept"}
@@ -37,8 +37,8 @@ const FriendRequestItems = ({ fullName, id }) => {
         <ButtonLoading
           isLoading={isCanceling}
           icon={<Close className="mr-1" fontSize="small" />}
-          onClick={() => {
-            cancelFriendRequest(id);
+          onClick={async () => {
+            await cancelFriendRequest(id).unwrap();
           }}
           title={"Cancel"}
           size={"small"}
@@ -50,6 +50,8 @@ const FriendRequestItems = ({ fullName, id }) => {
 
 const FriendRequests = () => {
   const { data = [], refetch } = useGetPenddingFriendRequestQuery();
+  console.log(data);
+
   const renderFriendRequestItems = () => {
     return data.map((user) => (
       <FriendRequestItems
@@ -61,14 +63,14 @@ const FriendRequests = () => {
   };
 
   useEffect(() => {
-    socket.on("friendRequestsReceived", () => {
-      console.log("friendRequestsReceived", data);
-      if (data.from) {
+    socket.on("friendRequestReceived", () => {
+      console.log("friendRequestReceived", data);
+      if (data) {
         refetch();
       }
     });
     return () => {
-      socket.off("friendRequestsReceived");
+      socket.off("friendRequestReceived");
     };
   }, [data, refetch]);
 
@@ -76,7 +78,7 @@ const FriendRequests = () => {
     <div className="card">
       <p className="mb-4 font-bold">FriendRequests</p>
       <div className="space-y-4">{renderFriendRequestItems()}</div>
-      <FriendRequestItems fullName={"SSS"} />
+      {/* <FriendRequestItems fullName={"SSS"} /> */}
     </div>
   );
 };

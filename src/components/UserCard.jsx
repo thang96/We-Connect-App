@@ -21,13 +21,14 @@ const UserCard = ({
     useAccepntFriendRequestMutation();
   const [cancelFriendRequest, { isLoading: isCanceling }] =
     useCancelFriendRequestMutation();
+    
   const getActionButtons = () => {
     if (isFriend) {
       return (
         <ButtonLoading
           onClick={() => {}}
           variant={"contained"}
-          title={"Request Sent"}
+          title={"Mesage"}
           size={"small"}
           isLoading={isLoading}
           icon={<MessageOutlined className="mr-1" fontSize="small" />}

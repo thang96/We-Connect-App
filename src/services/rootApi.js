@@ -113,7 +113,49 @@ export const rootApi = createApi({
             body: formData,
           };
         },
-        invalidatesTags: ["Post"], // Invalidate the Post tag
+        onQueryStarted: async (
+          args,
+          { dispatch, queryFulfilled, getState },
+        ) => {
+          const store = getState();
+          const tempId = crypto.randomUUID();
+          const newPost = {
+            _id: tempId,
+            likes: [],
+            comments: [],
+            content: args.get("content"),
+            author: {
+              notifications: [],
+              _id: store.auth.useInfo._id,
+              fullName: store.auth.useInfo.fullName,
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            __v: 0,
+          };
+
+          const patchResult = dispatch(
+             rootApi.util.updateQueryData("getPost", { limit: 10, offset: 0 }, (draft) => {
+              draft.unshift(newPost);
+            }),
+          );
+
+          try {
+            const { data } = await queryFulfilled;
+            dispatch(
+              rootApi.util.updateQueryData("getPost", { limit: 10, offset: 0 }, (draft) => {
+                const index = draft.findIndex((post) => post._id === tempId);
+                if (index !== -1) {
+                  draft[index] = data;
+                }
+              }),
+            );
+          } catch (error) {
+            console.log(error);
+            patchResult.undo();
+          }
+        },
+        // invalidatesTags: ["Post"],
       }),
 
       getPost: builder.query({
@@ -141,6 +183,7 @@ export const rootApi = createApi({
             ? [
                 ...result.users.map(({ _id }) => ({ type: "Users", id: _id })),
                 { type: "Users", id: "LIST" },
+                { type: "FriendPendingRequest", id: "LIST" },
               ]
             : [{ type: "Users", id: "LIST" }],
       }),
@@ -155,7 +198,10 @@ export const rootApi = createApi({
             },
           };
         },
-        invalidatesTags: ["Users"], // Invalidate the Users tag
+        invalidatesTags: (result, error, args) => [
+          { type: "Users", id: args },
+          { type: "FriendPendingRequest", id: "LIST" },
+        ], // Invalidate the Users tag
       }),
 
       getPenddingFriendRequest: builder.query({
@@ -189,8 +235,8 @@ export const rootApi = createApi({
         },
         invalidatesTags: (result, error, args) => [
           { type: "Users", id: args },
-          { type: "FriendPendingRequest", id: args },
-        ], // Invalidate the Users tag
+          { type: "FriendPendingRequest", id: "LIST" },
+        ], // Invalidate the Users and FriendPendingRequest tags
       }),
 
       cancelFriendRequest: builder.mutation({
@@ -205,8 +251,8 @@ export const rootApi = createApi({
         },
         invalidatesTags: (result, error, args) => [
           { type: "Users", id: args },
-          { type: "FriendPendingRequest", id: args },
-        ], // Invalidate the Users tag
+          { type: "FriendPendingRequest", id: "LIST" },
+        ], // Invalidate the Users and FriendPendingRequest tags
       }),
     };
   },

@@ -48,15 +48,28 @@ export const useLazyLoad = () => {
         return;
       }
       previousDataRef.current = data;
-      setPosts((prev) => [...prev, ...data]);
+      setPosts((prev) => {
+        if (offset === 0) return data;
+        return [...prev, ...data];
+      });
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, data, offset]);
 
   const loadMore = useCallback(() => {
     setOffset((prevOffset) => prevOffset + limit);
   }, []);
 
-  useInfinitedScroll({ hasMore, isFetching, loadMore });
+  useInfinitedScroll({
+    hasMore,
+    isFetching,
+    loadMore,
+    offset,
+    resetFuntion: () => {
+      setOffset(0);
+      setHasMore(true);
+      previousDataRef.current = null;
+    },
+  });
 
   return { posts, hasMore, isLoading, isFetching, loadMore };
 };
@@ -79,20 +92,35 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
       Array.isArray(data?.users) &&
       previousDataRef.current !== data?.users
     ) {
-      if (data?.users?.length === 0 && data?.offset < data?.total) {
+      if (data?.users?.length === 0) {
         setHasMore(false);
         return;
       }
       previousDataRef.current = data?.users;
-      setUsers(data.users);
+      setUsers((prev) => {
+        if (offsetUsers === 0) return data?.users;
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        return [...prev, ...data?.users];
+      });
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, data, offsetUsers]);
+
   const loadMore = useCallback(() => {
     setOffsetUsers((prevOffset) => prevOffset + limitUsers);
   }, []);
 
-  useInfinitedScroll({ hasMore, isFetching, loadMore });
- 
+  useInfinitedScroll({
+    hasMore,
+    isFetching,
+    loadMore,
+    offsetUsers,
+    resetFuntion: () => {
+      setOffsetUsers(0);
+      setHasMore(true);
+      previousDataRef.current = null;
+    },
+  });
+
   return { users, hasMore, isLoading, isFetching, loadMore };
 };
 
@@ -102,21 +130,35 @@ export const useInfinitedScroll = ({
   loadMore,
   threshold = 50,
   throttleMiliseccond = 500,
+  offset,
+  resetFuntion,
 }) => {
   const handleScroll = useMemo(() => {
     return throttle(() => {
-      if (!hasMore || isFetching) {
-        return;
-      }
       const scrollHeight = document.documentElement.scrollHeight;
       const scrollTop = document.documentElement.scrollTop;
       const clientHeight = document.documentElement.clientHeight;
 
+      if (scrollTop < 100 && offset > 0) {
+        resetFuntion();
+      }
+
+      if (!hasMore || isFetching) {
+        return;
+      }
       if (scrollTop + clientHeight + threshold >= scrollHeight) {
         loadMore();
       }
     }, throttleMiliseccond);
-  }, [hasMore, isFetching, loadMore, threshold, throttleMiliseccond]);
+  }, [
+    hasMore,
+    isFetching,
+    loadMore,
+    offset,
+    resetFuntion,
+    threshold,
+    throttleMiliseccond,
+  ]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);

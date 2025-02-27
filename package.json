@@ -3,10 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://thang96.github.io/We-Connect-App/",
+  "homepage": "https://thang96.github.io/We-Connect-App",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist",

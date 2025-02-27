@@ -1,7 +1,7 @@
 // import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, RouterProvider, HashRouter } from "react-router-dom";
 // import ModalProvider from "@context/ModalProvider";
 import RootLayout from "@pages/RootLayout";
 import HomePage from "@pages/HomePage";
@@ -20,7 +20,7 @@ import Dialog from "@components/Dialog";
 import Loading from "@components/Loading";
 import SearchUserPage from "@pages/SearchUserPage";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     element: <RootLayout />,
     children: [
@@ -62,13 +62,14 @@ const router = createBrowserRouter([
   },
 ]);
 
+
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <Provider store={store}>
     <PersistGate loading={<Loading />} persistor={persistor}>
       <ThemeProvider theme={theme}>
         {/* <ModalProvider> */}
-        <RouterProvider router={router} />
+          <RouterProvider basename={import.meta.env.mode == "development" ? '/' : "/We-Connect-App"} router={router} />
         <Dialog />
         {/* </ModalProvider> */}
       </ThemeProvider>

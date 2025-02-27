@@ -66,7 +66,7 @@ const Header = () => {
           ) : (
             <div className="flex items-center gap-4">
               <Link to={"/"}>
-                <img className="h-8 w-8" src="/weconnect-logo.png" alt="" />
+                <img className="h-8 w-8" src={(import.meta.env.mode == "development" ? '/' : "/We-Connect-App") + "/weconnect-logo.png"} alt="" />
               </Link>
               <div className="flex items-center gap-1">
                 <div

@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: "/We-Connect-App/", // Ensure this is set correctly
+  // base: "/We-Connect-App/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

@@ -85,6 +85,7 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
     offset: offsetUsers,
     searchQuery: searchQuery,
   });
+  const totalUser = data?.total;
 
   useEffect(() => {
     if (
@@ -121,7 +122,15 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
     },
   });
 
-  return { users, hasMore, isLoading, isFetching, loadMore };
+  return {
+    users,
+    hasMore,
+    isLoading,
+    isFetching,
+    loadMore,
+    offsetUsers,
+    totalUser,
+  };
 };
 
 export const useInfinitedScroll = ({

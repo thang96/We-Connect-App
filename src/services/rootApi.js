@@ -135,20 +135,28 @@ export const rootApi = createApi({
           };
 
           const patchResult = dispatch(
-             rootApi.util.updateQueryData("getPost", { limit: 10, offset: 0 }, (draft) => {
-              draft.unshift(newPost);
-            }),
+            rootApi.util.updateQueryData(
+              "getPost",
+              { limit: 10, offset: 0 },
+              (draft) => {
+                draft.unshift(newPost);
+              },
+            ),
           );
 
           try {
             const { data } = await queryFulfilled;
             dispatch(
-              rootApi.util.updateQueryData("getPost", { limit: 10, offset: 0 }, (draft) => {
-                const index = draft.findIndex((post) => post._id === tempId);
-                if (index !== -1) {
-                  draft[index] = data;
-                }
-              }),
+              rootApi.util.updateQueryData(
+                "getPost",
+                { limit: 10, offset: 0 },
+                (draft) => {
+                  const index = draft.findIndex((post) => post._id === tempId);
+                  if (index !== -1) {
+                    draft[index] = data;
+                  }
+                },
+              ),
             );
           } catch (error) {
             console.log(error);

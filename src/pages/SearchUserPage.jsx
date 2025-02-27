@@ -8,9 +8,10 @@ const SearchUserPage = () => {
   const location = useLocation();
   const searchQuery = location?.state?.searchTemp || "";
 
-  const { users, isLoading, isFetching, loadMore } = useLazyLoadSearchUsers({
-    searchQuery,
-  });
+  const { users, isLoading, isFetching, loadMore, offsetUsers, totalUser } =
+    useLazyLoadSearchUsers({
+      searchQuery,
+    });
 
   useEffect(() => {
     if (!searchQuery) return;
@@ -18,7 +19,11 @@ const SearchUserPage = () => {
     const checkAndLoadMore = () => {
       const contentHeight = document.documentElement.scrollHeight;
       const viewportHeight = window.innerHeight;
-      if (contentHeight <= viewportHeight && !isFetching) {
+      if (
+        contentHeight <= viewportHeight &&
+        !isFetching &&
+        offsetUsers < totalUser
+      ) {
         loadMore();
       }
     };
@@ -28,7 +33,7 @@ const SearchUserPage = () => {
     return () => {
       window.removeEventListener("resize", checkAndLoadMore);
     };
-  }, [isFetching, loadMore, searchQuery]);
+  }, [isFetching, loadMore, offsetUsers, searchQuery, totalUser]);
 
   const renderUsers = () => {
     return (users || []).map((user) => (
@@ -42,7 +47,7 @@ const SearchUserPage = () => {
       />
     ));
   };
-  
+
   return isLoading ? (
     <Loading />
   ) : (

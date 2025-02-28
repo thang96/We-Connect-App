@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 export default defineConfig(({mode}) => { 
   return {
   plugins: [react(), tailwindcss()],
-  base: mode == "development" ? "/" : "/We-Connect-App",
+  base: mode === "development" ? "/" : "/We-Connect-App",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

@@ -5,8 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "@emotion/react";
 import { useMediaQuery } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useGetPostQuery, useSearchUsersQuery } from "@services/rootApi";
 import { throttle } from "lodash";
+import { useGetPostQuery } from "@services/postApi";
+import { useSearchUsersQuery } from "@services/rootApi";
 
 export const useUserInfo = () => {
   return useSelector((state) => state.auth.useInfo);
@@ -30,45 +31,48 @@ export const useDetectLayout = () => {
   return { isMediumLayout };
 };
 
-export const useLazyLoad = () => {
+export const useLazyLoadPosts = () => {
   const [offset, setOffset] = useState(0);
   const limit = 10;
-  const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
-  const previousDataRef = useRef();
-  const { data, isLoading, isFetching, isSuccess } = useGetPostQuery({
+  const prevPostCountRef = useRef(0);
+  const {
+    data = { ids: [], entities: [] },
+    isLoading,
+    isFetching,
+    isSuccess,
+    refetch,
+  } = useGetPostQuery({
     limit,
     offset,
   });
 
+  const posts = data.ids.map((id) => data.entities[id]);
+
   useEffect(() => {
-    if (isSuccess && data && previousDataRef.current !== data) {
-      if (data.length === 0) {
+    if (!isFetching && data && hasMore) {
+      const currentPostCount = data.ids.length;
+      const newFetchedCount = currentPostCount - prevPostCountRef.current;
+      if (newFetchedCount === 0) {
         setHasMore(false);
-        return;
+      } else {
+        prevPostCountRef.current = currentPostCount;
       }
-      previousDataRef.current = data;
-      setPosts((prev) => {
-        if (offset === 0) return data;
-        return [...prev, ...data];
-      });
     }
-  }, [isSuccess, data, offset]);
+  }, [isFetching, data, hasMore]);
 
   const loadMore = useCallback(() => {
     setOffset((prevOffset) => prevOffset + limit);
   }, []);
 
+  useEffect(() => {
+    refetch();
+  }, [offset]);
+
   useInfinitedScroll({
     hasMore,
     isFetching,
     loadMore,
-    offset,
-    resetFuntion: () => {
-      setOffset(0);
-      setHasMore(true);
-      previousDataRef.current = null;
-    },
   });
 
   return { posts, hasMore, isLoading, isFetching, loadMore };
@@ -80,11 +84,12 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
   const [users, setUsers] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const previousDataRef = useRef();
-  const { data, isLoading, isFetching, isSuccess } = useSearchUsersQuery({
-    limit: limitUsers,
-    offset: offsetUsers,
-    searchQuery: searchQuery,
-  });
+  const { data, isLoading, isFetching, isSuccess, refetch } =
+    useSearchUsersQuery({
+      limit: limitUsers,
+      offset: offsetUsers,
+      searchQuery: searchQuery,
+    });
   const totalUser = data?.total;
 
   useEffect(() => {
@@ -100,7 +105,6 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
       previousDataRef.current = data?.users;
       setUsers((prev) => {
         if (offsetUsers === 0) return data?.users;
-        // eslint-disable-next-line no-unsafe-optional-chaining
         return [...prev, ...data?.users];
       });
     }
@@ -137,10 +141,10 @@ export const useInfinitedScroll = ({
   hasMore,
   isFetching,
   loadMore,
+  offset,
+  resetFuntion = () => {},
   threshold = 50,
   throttleMiliseccond = 500,
-  offset,
-  resetFuntion,
 }) => {
   const handleScroll = useMemo(() => {
     return throttle(() => {

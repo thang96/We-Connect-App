@@ -1,25 +1,33 @@
 import Post from "./Post";
 import Loading from "./Loading";
-import { useLazyLoad } from "@hooks/index";
+import { useLazyLoadPosts, useUserInfo } from "@hooks/index";
+import { useLikePostMutation } from "@services/postApi";
 
 const PostList = () => {
-  const { posts, isLoading, isFetching } = useLazyLoad();
+  const { posts, isFetching } = useLazyLoadPosts();
+  const [likePost, { isLoading }] = useLikePostMutation();
+  const { _id } = useUserInfo();
 
   const renderPost = () => {
     return (posts || []).map((post) => (
       <Post
-        key={post?._id}
+        key={post?._id} // Ensure unique key
+        postId={post?._id}
         fullName={post.author?.fullName}
         createdAt={post.createdAt}
         content={post.content}
         image={post.image}
         likes={post.likes}
+        isLiked={(post.likes || []).some((like) => like.author?._id === _id)}
         comments={post.comments}
+        onLike={(postId) => {
+          likePost(postId);
+        }}
       />
     ));
   };
 
-  if (isLoading) {
+  if (isFetching) {
     return <Loading />;
   }
 

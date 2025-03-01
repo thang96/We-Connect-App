@@ -11,7 +11,7 @@ export const timeSince = (dateString) => {
   const minutes = Math.floor((diffInSeconds % 3600) / 60);
   // const seconds = diffInSeconds % 60;
   if (days > 2) {
-    return `${pastDate.getHours()} giờ, ngày ${pastDate.getDate()}, tháng ${pastDate.getMonth()}, năm ${pastDate.getFullYear()}`;
+    return `${pastDate.getDate()}/${pastDate.getMonth()}/${pastDate.getFullYear()} lúc ${pastDate.getHours()} giờ`;
   }
 
   return `${days !== 0 ? `${days} ngày,` : ""} ${hours !== 0 ? `${hours} giờ,` : ""} ${minutes !== 0 ? `${minutes} phút trước` : "vừa xong"}`;

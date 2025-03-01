@@ -4,7 +4,7 @@ import { Avatar } from "@mui/material";
 import { Link } from "react-router-dom";
 import { socket } from "@context/SocketProvider";
 import ButtonLoading from "./ButtonLoading";
-import { useAccepntFriendRequestMutation, useCancelFriendRequestMutation } from "@services/friendApi";
+import { useAccepntFriendRequestMutation, useCancelFriendRequestMutation, useSendFriendRequestMutation } from "@services/friendApi";
 
 const UserCard = ({
   id,

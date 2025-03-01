@@ -35,19 +35,18 @@ export const useLazyLoadPosts = () => {
   const [offset, setOffset] = useState(0);
   const limit = 10;
   const [hasMore, setHasMore] = useState(true);
-  const prevPostCountRef = useRef(0);
   const {
     data = { ids: [], entities: [] },
-    isLoading,
     isFetching,
-    isSuccess,
     refetch,
   } = useGetPostQuery({
     limit,
     offset,
   });
+  console.log(offset);
 
   const posts = data.ids.map((id) => data.entities[id]);
+  const prevPostCountRef = useRef(0);
 
   useEffect(() => {
     if (!isFetching && data && hasMore) {
@@ -59,7 +58,7 @@ export const useLazyLoadPosts = () => {
         prevPostCountRef.current = currentPostCount;
       }
     }
-  }, [isFetching, data, hasMore]);
+  }, [isFetching, data.ids, hasMore]);
 
   const loadMore = useCallback(() => {
     setOffset((prevOffset) => prevOffset + limit);
@@ -75,7 +74,38 @@ export const useLazyLoadPosts = () => {
     loadMore,
   });
 
-  return { posts, hasMore, isLoading, isFetching, loadMore };
+  return { posts, isFetching };
+};
+
+export const useInfinitedScroll = ({
+  hasMore,
+  isFetching,
+  loadMore,
+  threshold = 70,
+  throttleMiliseccond = 500,
+}) => {
+  const handleScroll = useMemo(() => {
+    return throttle(() => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+
+      if (!hasMore) {
+        return;
+      }
+      if (scrollTop + clientHeight + threshold >= scrollHeight) {
+        loadMore();
+      }
+    }, throttleMiliseccond);
+  }, [hasMore, isFetching, loadMore]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      handleScroll.cancel();
+    };
+  }, [handleScroll]);
 };
 
 export const useLazyLoadSearchUsers = ({ searchQuery }) => {
@@ -114,7 +144,7 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
     setOffsetUsers((prevOffset) => prevOffset + limitUsers);
   }, []);
 
-  useInfinitedScroll({
+  useInfinitedScrollSearchUsers({
     hasMore,
     isFetching,
     loadMore,
@@ -137,7 +167,7 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
   };
 };
 
-export const useInfinitedScroll = ({
+export const useInfinitedScrollSearchUsers = ({
   hasMore,
   isFetching,
   loadMore,
@@ -151,10 +181,6 @@ export const useInfinitedScroll = ({
       const scrollHeight = document.documentElement.scrollHeight;
       const scrollTop = document.documentElement.scrollTop;
       const clientHeight = document.documentElement.clientHeight;
-
-      if (scrollTop < 100 && offset > 0) {
-        resetFuntion();
-      }
 
       if (!hasMore || isFetching) {
         return;

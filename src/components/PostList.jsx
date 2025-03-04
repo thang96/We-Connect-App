@@ -1,14 +1,22 @@
 import Post from "./Post";
 import Loading from "./Loading";
 import { useLazyLoadPosts, useUserInfo } from "@hooks/index";
-import { useLikePostMutation, useUnLikePostMutation } from "@services/postApi";
+import {
+  useCreateCommentMutation,
+  useLikePostMutation,
+  useUnLikePostMutation,
+} from "@services/postApi";
+import { useCreateNotificationMutation } from "@services/notificationApi";
 
 const PostList = () => {
   const { posts, isFetching } = useLazyLoadPosts();
   const [likePost] = useLikePostMutation();
   const [unLikePost] = useUnLikePostMutation();
-  const { _id } = useUserInfo();
-
+  const [createNotification] = useCreateNotificationMutation();
+  const [createComment] = useCreateCommentMutation();
+  const userInfo = useUserInfo();
+  const _id = userInfo ? userInfo._id : null;
+  
   const renderPost = () => {
     return (posts || []).map((post) => {
       const likeStatus = (post.likes || []).some(
@@ -26,11 +34,29 @@ const PostList = () => {
           isLiked={likeStatus}
           comments={post.comments}
           onLike={(postId) => {
-            likeStatus ? likePost(postId) : unLikePost(postId);
+            !likeStatus ? onLikePost(postId, post) : onUnLikePost(postId);
+          }}
+          onComment={({ comment, postId }) => {
+            createComment({ comment, postId });
           }}
         />
       );
     });
+  };
+
+  const onLikePost = async (postId, post) => {
+    const res = await likePost(postId).unwrap();
+    if (post?.author?._id !== _id) {
+      createNotification({
+        userId: post?.author?._id,
+        postId: post?._id,
+        notificationType: "like",
+        notificationTypeId: res._id,
+      });
+    }
+  };
+  const onUnLikePost = (postId) => {
+    unLikePost(postId);
   };
 
   if (isFetching) {

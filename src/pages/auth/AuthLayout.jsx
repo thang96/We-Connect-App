@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 const AuthLayout = () => {
+  
   return (
     <div className="">
       <div className="bg-dark-200 flex h-screen items-center justify-center">

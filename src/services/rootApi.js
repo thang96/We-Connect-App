@@ -56,11 +56,11 @@ const baseQueryWithReAuth = async (args, api, extraOptions) => {
 export const rootApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReAuth,
-  tagTypes: ["Post", "Users", "FriendPendingRequest"],
+  tagTypes: ["Post", "Users", "FriendPendingRequest", "GetNotifications"],
   // refetchOnMountOrArgChange: true,
   // keepUnusedDataFor: 10,
   // refetchOnFocus:true,
-  refetchOnReconnect:true,
+  refetchOnReconnect: true,
   endpoints: (builder) => {
     return {
       register: builder.mutation({
@@ -127,7 +127,6 @@ export const rootApi = createApi({
               ]
             : [{ type: "Users", id: "LIST" }],
       }),
-
     };
   },
 });

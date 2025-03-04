@@ -10,7 +10,7 @@ const PostCreation = () => {
   return (
     <div className="flex gap-2 border-solid bg-white p-4 shadow-sm mb-2">
       <Avatar className="!bg-primary-main">
-        {userInfo.fullName?.[0].toUpperCase()}
+        {userInfo?.fullName?.[0].toUpperCase()}
       </Avatar>
       <TextField
         className="flex-1"

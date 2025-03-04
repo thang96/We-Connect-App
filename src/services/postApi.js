@@ -163,7 +163,6 @@ export const postApi = rootApi.injectEndpoints({
             method: "DELETE",
           };
         },
-
         onQueryStarted: async (
           args,
           { dispatch, queryFulfilled, getState },
@@ -216,7 +215,63 @@ export const postApi = rootApi.injectEndpoints({
             patchResult.undo();
           }
         },
+      }),
 
+      createComment: builder.mutation({
+        query: ({ comment, postId }) => {
+          return {
+            url: `/posts/${postId}/comments`,
+            method: "POST",
+            body: { comment },
+          };
+        },
+        onQueryStarted: async (
+          params,
+          { dispatch, queryFulfilled, getState },
+        ) => {
+          const store = getState();
+          const tempId = crypto.randomUUID();
+
+          const optimisticComment = {
+            _id: tempId,
+            comment: params.comment,
+            author: {
+              _id: store.auth.useInfo._id,
+              fullName: store.auth.useInfo.fullName,
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          const patchResult = dispatch(
+            rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
+              const currentPost = draft.entities[params.postId];
+
+              if (currentPost) {
+                currentPost.comments.push(optimisticComment);
+              }
+            }),
+          );
+
+          try {
+            const { data } = await queryFulfilled;
+            dispatch(
+              rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
+                const currentPost = draft.entities[params.postId];
+                if (currentPost) {
+                  const commentIndex = currentPost.comments.findIndex(
+                    (comment) => comment._id === tempId,
+                  );
+                  if (commentIndex !== -1) {
+                    currentPost.comments[commentIndex] = data;
+                  }
+                }
+              }),
+            );
+          } catch (error) {
+            patchResult.undo();
+          }
+        },
       }),
     };
   },
@@ -227,4 +282,5 @@ export const {
   useGetPostQuery,
   useLikePostMutation,
   useUnLikePostMutation,
-} = rootApi;
+  useCreateCommentMutation,
+} = postApi;

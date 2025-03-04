@@ -1,4 +1,4 @@
-// import { StrictMode } from "react";
+import { lazy,StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import {
@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 // import ModalProvider from "@context/ModalProvider";
 import RootLayout from "@pages/RootLayout";
-import HomePage from "@pages/HomePage";
+const HomePage = lazy(() => import("@pages/HomePage"));
 import { ThemeProvider } from "@emotion/react";
 import theme from "./config/muiConfig";
 import RegisterPage from "@pages/auth/RegisterPage";

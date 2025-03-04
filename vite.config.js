@@ -8,9 +8,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig(({mode}) => { 
+  
   return {
   plugins: [react(), tailwindcss()],
-  base: mode === "development" ? "/" : "/We-Connect-App",
+  // server: {
+  //   port: 3000, // Change the port to 3000
+  // },
+  // base: mode === "development" ? "/" : "/We-Connect-App",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

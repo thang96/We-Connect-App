@@ -6,7 +6,7 @@
   "homepage": "https://thang96.github.io/We-Connect-App",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --mode production",
+    "build": "vite build --host",
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist",
@@ -25,6 +25,7 @@
     "@tailwindcss/postcss": "^4.0.6",
     "@tailwindcss/vite": "^4.0.6",
     "classnames": "^2.5.1",
+    "cors": "^2.8.5",
     "eslint-plugin-jest": "^28.11.0",
     "jest-environment-jsdom": "^29.7.0",
     "lodash": "^4.17.21",

@@ -16,3 +16,8 @@ export const timeSince = (dateString) => {
 
   return `${days !== 0 ? `${days} ngày,` : ""} ${hours !== 0 ? `${hours} giờ,` : ""} ${minutes !== 0 ? `${minutes} phút trước` : "vừa xong"}`;
 };
+
+export const timeYYMMDD = (dateString)=>{
+  const pastDate = new Date(dateString);
+  return `${pastDate.getFullYear()}/${pastDate.getMonth()}/${pastDate.getDate()} ${pastDate.getHours()}:${pastDate.getMinutes()} `;
+}

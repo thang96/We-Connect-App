@@ -39,11 +39,7 @@ export const useLazyLoadPosts = () => {
     data = { ids: [], entities: [] },
     isFetching,
     refetch,
-  } = useGetPostQuery({
-    limit,
-    offset,
-  });
-  console.log(offset);
+  } = useGetPostQuery({ offset, limit });
 
   const posts = data.ids.map((id) => data.entities[id]);
   const prevPostCountRef = useRef(0);
@@ -58,7 +54,7 @@ export const useLazyLoadPosts = () => {
         prevPostCountRef.current = currentPostCount;
       }
     }
-  }, [isFetching, data.ids, hasMore]);
+  }, [isFetching, data, hasMore]);
 
   const loadMore = useCallback(() => {
     setOffset((prevOffset) => prevOffset + limit);
@@ -93,7 +89,7 @@ export const useInfinitedScroll = ({
       if (!hasMore) {
         return;
       }
-      if (scrollTop + clientHeight + threshold >= scrollHeight) {
+      if (scrollTop + clientHeight + threshold >= scrollHeight && !isFetching) {
         loadMore();
       }
     }, throttleMiliseccond);

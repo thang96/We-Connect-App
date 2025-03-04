@@ -3,7 +3,6 @@ import { Menu as MenuIcon, Notifications, Search } from "@mui/icons-material";
 import {
   AppBar,
   Avatar,
-  Badge,
   IconButton,
   Menu,
   MenuItem,
@@ -16,6 +15,7 @@ import { toggleDrawer } from "@redux/slices/settingsSlice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import NotificationPanel from "./NotificationPanel";
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -54,7 +54,7 @@ const Header = () => {
   const handleUserProfileClick = (e) => {
     setAnchorEl(e.target);
   };
-  
+
   return (
     <div>
       <AppBar color="white" position="static">
@@ -66,7 +66,15 @@ const Header = () => {
           ) : (
             <div className="flex items-center gap-4">
               <Link to={"/"}>
-                <img className="h-8 w-8" src={(import.meta.env.MODE == "development" ? '' : "/We-Connect-App") + "/weconnect-logo.png"} alt="" />
+                <img
+                  className="h-8 w-8"
+                  src={
+                    (import.meta.env.MODE == "development"
+                      ? ""
+                      : "/We-Connect-App") + "/weconnect-logo.png"
+                  }
+                  alt=""
+                />
               </Link>
               <div className="flex items-center gap-1">
                 <div
@@ -110,21 +118,17 @@ const Header = () => {
               </div>
             </div>
           )}
-          <div>
+          <div className="flex items-center">
             {isMobile && (
               <IconButton>
                 <Search />
               </IconButton>
             )}
-            <IconButton size="medium">
-              <Badge badgeContent={4} color="error">
-                <Notifications />
-              </Badge>
-            </IconButton>
+            <NotificationPanel />
             <IconButton onClick={handleUserProfileClick} size="medium">
               {/* <AccountCircle /> */}
               <Avatar className="!bg-primary-main">
-                {userInfo.fullName?.[0].toUpperCase()}
+                {userInfo?.fullName?.[0].toUpperCase()}
               </Avatar>
             </IconButton>
           </div>

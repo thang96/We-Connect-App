@@ -1,10 +1,14 @@
-// import { StrictMode } from "react";
+import { lazy,StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createHashRouter,
+  RouterProvider,
+  createBrowserRouter,
+} from "react-router-dom";
 // import ModalProvider from "@context/ModalProvider";
 import RootLayout from "@pages/RootLayout";
-import HomePage from "@pages/HomePage";
+const HomePage = lazy(() => import("@pages/HomePage"));
 import { ThemeProvider } from "@emotion/react";
 import theme from "./config/muiConfig";
 import RegisterPage from "@pages/auth/RegisterPage";
@@ -68,7 +72,12 @@ createRoot(document.getElementById("root")).render(
     <PersistGate loading={<Loading />} persistor={persistor}>
       <ThemeProvider theme={theme}>
         {/* <ModalProvider> */}
-        <RouterProvider router={router} />
+        <RouterProvider
+          basename={
+            import.meta.env.mode == "development" ? "/" : "/We-Connect-App"
+          }
+          router={router}
+        />
         <Dialog />
         {/* </ModalProvider> */}
       </ThemeProvider>

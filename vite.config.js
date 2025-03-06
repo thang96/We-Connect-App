@@ -7,8 +7,14 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({mode}) => { 
+  
+  return {
   plugins: [react(), tailwindcss()],
+  // server: {
+  //   port: 3000, // Change the port to 3000
+  // },
+  // base: mode === "development" ? "/" : "/We-Connect-App",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
@@ -21,4 +27,5 @@ export default defineConfig({
       "@services": path.resolve(__dirname, "src/services"),
     },
   },
+}
 });

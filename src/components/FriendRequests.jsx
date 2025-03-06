@@ -1,13 +1,14 @@
 import { socket } from "@context/SocketProvider";
 import { Check, Close } from "@mui/icons-material";
 import { Avatar } from "@mui/material";
+
+import { useEffect } from "react";
+import ButtonLoading from "./ButtonLoading";
 import {
   useAccepntFriendRequestMutation,
   useCancelFriendRequestMutation,
   useGetPenddingFriendRequestQuery,
-} from "@services/rootApi";
-import { useEffect } from "react";
-import ButtonLoading from "./ButtonLoading";
+} from "@services/friendApi";
 
 const FriendRequestItems = ({ fullName, id }) => {
   const [accepntFriendRequest, { isLoading: isAccepting }] =
@@ -49,8 +50,9 @@ const FriendRequestItems = ({ fullName, id }) => {
 };
 
 const FriendRequests = () => {
-  const { data = [], refetch } = useGetPenddingFriendRequestQuery();
-  console.log(data);
+  const { data = [], refetch } = useGetPenddingFriendRequestQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
   const renderFriendRequestItems = () => {
     return data.map((user) => (

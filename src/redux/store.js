@@ -16,6 +16,7 @@ import {
   REGISTER,
 } from "redux-persist";
 import { logoutMiddleware } from "./middlewares";
+import { setupListeners } from "@reduxjs/toolkit/query";
 
 const persistConfig = {
   key: "root",
@@ -25,8 +26,8 @@ const persistConfig = {
     rootApi.reducerPath,
     // dialogReducer.reducerPath,
     // settingsReducer.reducerPath,
-    'settings',
-    'dialog'
+    "settings",
+    "dialog",
   ],
 };
 
@@ -51,5 +52,7 @@ export const store = configureStore({
     }).concat(logoutMiddleware, rootApi.middleware);
   },
 });
+// setup to listen when page is refetchOnFocus or refetchOnReconnect...
+setupListeners(store.dispatch);
 
 export const persistor = persistStore(store);

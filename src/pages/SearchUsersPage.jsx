@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 
 const SearchUserPage = () => {
   const location = useLocation();
-  const searchQuery = location?.state?.searchTemp || "";
+  const searchQuery = location?.state?.searchTerm || "";
 
   const { users, isLoading, isFetching, loadMore, offsetUsers, totalUser } =
     useLazyLoadSearchUsers({

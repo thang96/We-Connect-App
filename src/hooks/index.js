@@ -1,47 +1,57 @@
-import { useSelector } from "react-redux";
-import { logout } from "@redux/slices/authSlice";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { socket } from "@context/SocketProvider";
 import { useTheme } from "@emotion/react";
+import { Events } from "@libs/constants";
 import { useMediaQuery } from "@mui/material";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { throttle } from "lodash";
-import { useGetPostQuery } from "@services/postApi";
+import { logOut as logOutAction } from "@redux/slices/authSlice";
+import { useCreateNotificationMutation } from "@services/notificationApi";
+import { useGetPostsQuery } from "@services/postApi";
 import { useSearchUsersQuery } from "@services/rootApi";
+import { throttle } from "lodash";
+import { useMemo } from "react";
+import { useCallback } from "react";
+import { useRef } from "react";
+import { useEffect } from "react";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-export const useUserInfo = () => {
-  return useSelector((state) => state.auth.useInfo);
-};
-
-export const useUseLogout = () => {
-  const navigate = useNavigate();
+export const useLogout = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const logoutUser = () => {
-    dispatch(logout());
+  const logOut = () => {
+    dispatch(logOutAction());
     navigate("/login", { replace: true });
   };
 
-  return { logoutUser };
+  return { logOut };
+};
+
+export const useUserInfo = () => {
+  return useSelector((state) => state.auth.userInfo);
 };
 
 export const useDetectLayout = () => {
   const theme = useTheme();
   const isMediumLayout = useMediaQuery(theme.breakpoints.down("md"));
+
   return { isMediumLayout };
 };
 
 export const useLazyLoadPosts = () => {
   const [offset, setOffset] = useState(0);
   const limit = 10;
+  // const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+
   const {
     data = { ids: [], entities: [] },
     isFetching,
     refetch,
-  } = useGetPostQuery({ offset, limit });
+  } = useGetPostsQuery({ offset, limit });
 
   const posts = data.ids.map((id) => data.entities[id]);
+
   const prevPostCountRef = useRef(0);
 
   useEffect(() => {
@@ -54,54 +64,83 @@ export const useLazyLoadPosts = () => {
         prevPostCountRef.current = currentPostCount;
       }
     }
-  }, [isFetching, data, hasMore]);
+  }, [data, isFetching, hasMore]);
 
-  const loadMore = useCallback(() => {
-    setOffset((prevOffset) => prevOffset + limit);
+  const loadMore = useCallback(async () => {
+    setOffset((offset) => offset + limit);
   }, []);
 
   useEffect(() => {
     refetch();
-  }, [offset]);
+  }, [offset, refetch]);
 
-  useInfinitedScroll({
+  useInfiniteScroll({
     hasMore,
-    isFetching,
     loadMore,
+    isFetching,
   });
 
-  return { posts, isFetching };
+  return { isFetching, posts };
 };
 
-export const useInfinitedScroll = ({
+export const useInfiniteScroll = ({
   hasMore,
-  isFetching,
   loadMore,
-  threshold = 70,
-  throttleMiliseccond = 500,
+  isFetching,
+  threshold = 50,
+  throttleMs = 500,
 }) => {
   const handleScroll = useMemo(() => {
     return throttle(() => {
-      const scrollHeight = document.documentElement.scrollHeight;
-      const scrollTop = document.documentElement.scrollTop;
-      const clientHeight = document.documentElement.clientHeight;
+      const scrollTop = document.documentElement.scrollTop; // b
+      const scrollHeight = document.documentElement.scrollHeight; // a
+      const clientHeight = document.documentElement.clientHeight; // c
 
       if (!hasMore) {
         return;
       }
-      if (scrollTop + clientHeight + threshold >= scrollHeight && !isFetching) {
+
+      if (clientHeight + scrollTop + threshold >= scrollHeight && !isFetching) {
         loadMore();
       }
-    }, throttleMiliseccond);
-  }, [hasMore, isFetching, loadMore]);
+    }, throttleMs);
+  }, [hasMore, isFetching, loadMore, threshold, throttleMs]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
       handleScroll.cancel();
     };
   }, [handleScroll]);
+};
+
+export const useNotifications = () => {
+  const [createNotificationMutation] = useCreateNotificationMutation();
+  const { _id: currentUserId } = useUserInfo();
+
+  async function createNotification({
+    receiverUserId,
+    postId,
+    notificationType,
+    notificationTypeId,
+  }) {
+    if (receiverUserId === currentUserId) {
+      return;
+    }
+
+    const notification = await createNotificationMutation({
+      userId: receiverUserId,
+      postId,
+      notificationType,
+      notificationTypeId,
+    }).unwrap();
+
+    socket.emit(Events.CREATE_NOTIFICATION, notification);
+  }
+
+  return { createNotification };
 };
 
 export const useLazyLoadSearchUsers = ({ searchQuery }) => {
@@ -144,7 +183,6 @@ export const useLazyLoadSearchUsers = ({ searchQuery }) => {
     hasMore,
     isFetching,
     loadMore,
-    offsetUsers,
     resetFuntion: () => {
       setOffsetUsers(0);
       setHasMore(true);
@@ -167,8 +205,6 @@ export const useInfinitedScrollSearchUsers = ({
   hasMore,
   isFetching,
   loadMore,
-  offset,
-  resetFuntion = () => {},
   threshold = 50,
   throttleMiliseccond = 500,
 }) => {
@@ -185,15 +221,7 @@ export const useInfinitedScrollSearchUsers = ({
         loadMore();
       }
     }, throttleMiliseccond);
-  }, [
-    hasMore,
-    isFetching,
-    loadMore,
-    offset,
-    resetFuntion,
-    threshold,
-    throttleMiliseccond,
-  ]);
+  }, [hasMore, isFetching, loadMore, threshold, throttleMiliseccond]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);

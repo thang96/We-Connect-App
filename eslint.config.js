@@ -29,26 +29,13 @@ export default [
       ...react.configs.recommended.rules,
       ...react.configs["jsx-runtime"].rules,
       ...reactHooks.configs.recommended.rules,
-      "no-unused-vars": "warn",
       "react/jsx-no-target-blank": "off",
-      "react-refresh/only-export-components": "off",
       "react/prop-types": "off",
+      // "react-refresh/only-export-components": "off",
     },
   },
   {
-    // update this to match your test files
     files: ["**/*.spec.js", "**/*.test.js"],
-    ...jest.configs['flat/recommended'],
-    // plugins: { jest: pluginJest },
-    // languageOptions: {
-    //   globals: pluginJest.environments.globals.globals,
-    // },
-    // rules: {
-    //   "jest/no-disabled-tests": "warn",
-    //   "jest/no-focused-tests": "error",
-    //   "jest/no-identical-title": "error",
-    //   "jest/prefer-to-have-length": "warn",
-    //   "jest/valid-expect": "error",
-    // },
+    ...pluginJest.configs["flat/recommended"],
   },
 ];

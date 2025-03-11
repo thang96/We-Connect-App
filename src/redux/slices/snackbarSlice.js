@@ -8,18 +8,23 @@ const initialState = {
 
 export const snackbarSlice = createSlice({
   name: "snackbar",
-  initialState: initialState,
+  initialState,
   reducers: {
-    openSnackBar: (state, action) => {
+    // login: (state, action) => {
+    //   state.accessToken = action.payload.accessToken;
+    //   state.refreshToken = action.payload.refreshToken;
+    // }
+    openSnackbar: (state, action) => {
       state.open = true;
       state.message = action.payload.message;
       state.type = action.payload.type;
     },
-    closeSnackBar: () => {
+    closeSnackbar: () => {
       return initialState;
     },
+    // action creator => function ||| action { type, payload } => openSnackbar({message: 'Good job'}) => action { type: 'snackbar/openSnackbar', payload: {message: 'Good job'}}
   },
 });
 
-export const { openSnackBar, closeSnackBar } = snackbarSlice.actions;
+export const { openSnackbar, closeSnackbar } = snackbarSlice.actions;
 export default snackbarSlice.reducer;

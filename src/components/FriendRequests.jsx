@@ -1,88 +1,97 @@
 import { socket } from "@context/SocketProvider";
 import { Check, Close } from "@mui/icons-material";
 import { Avatar } from "@mui/material";
-
-import { useEffect } from "react";
-import ButtonLoading from "./ButtonLoading";
 import {
-  useAccepntFriendRequestMutation,
+  useAcceptFriendRequestMutation,
   useCancelFriendRequestMutation,
-  useGetPenddingFriendRequestQuery,
+  useGetPendingFriendRequestsQuery,
 } from "@services/friendApi";
+import { useEffect } from "react";
+import Button from "./Button";
+import { Events } from "@libs/constants";
 
-const FriendRequestItems = ({ fullName, id }) => {
-  const [accepntFriendRequest, { isLoading: isAccepting }] =
-    useAccepntFriendRequestMutation();
+const FriendRequestItem = ({ fullName, id }) => {
+  const [acceptFriendRequest, { isLoading: isAccepting }] =
+    useAcceptFriendRequestMutation();
   const [cancelFriendRequest, { isLoading: isCanceling }] =
     useCancelFriendRequestMutation();
 
   return (
-    <div>
-      <div className="flex items-center !space-x-1">
-        <Avatar className="!bg-primary-main">
-          {fullName?.[0].toUpperCase()}
-        </Avatar>
-        <p>{fullName}</p>
-      </div>
-      <div className="mt-2 flex !space-x-1">
-        <ButtonLoading
-          isLoading={isAccepting}
-          icon={<Check className="mr-1" fontSize="small" />}
-          onClick={async () => {
-            await accepntFriendRequest(id).unwrap();
-          }}
-          variant={"contained"}
-          title={"Accept"}
-          size={"small"}
-        />
-        <ButtonLoading
-          isLoading={isCanceling}
-          icon={<Close className="mr-1" fontSize="small" />}
-          onClick={async () => {
-            await cancelFriendRequest(id).unwrap();
-          }}
-          title={"Cancel"}
-          size={"small"}
-        />
+    <div className="flex gap-2">
+      <Avatar className="!bg-primary-main">
+        {fullName?.[0]?.toUpperCase()}
+      </Avatar>
+      <div>
+        <p className="font-bold">{fullName}</p>
+        <div className="mt-2 space-x-1">
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => acceptFriendRequest(id)}
+            icon={<Check className="mr-1" fontSize="small" />}
+            isLoading={isAccepting}
+          >
+            Accept
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => cancelFriendRequest(id)}
+            icon={<Close className="mr-1" fontSize="small" />}
+            isLoading={isCanceling}
+          >
+            Cancel
+          </Button>
+
+          {/* <Button
+            variant="contained"
+            size="small"
+            onClick={() => acceptFriendRequest(id)}
+          >
+            <Check className="mr-1" fontSize="small" /> Accept
+          </Button> */}
+          {/* <Button
+            variant="outlined"
+            size="small"
+            onClick={() => cancelFriendRequest(id)}
+          >
+            <Close className="mr-1" fontSize="small" /> Cancel
+          </Button> */}
+        </div>
       </div>
     </div>
   );
 };
 
 const FriendRequests = () => {
-  const { data = [], refetch } = useGetPenddingFriendRequestQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
-
-  const renderFriendRequestItems = () => {
-    return data.map((user) => (
-      <FriendRequestItems
-        key={user?._id}
-        fullName={user?.fullName}
-        id={user?._id}
-      />
-    ));
-  };
+  const { data = [], refetch } = useGetPendingFriendRequestsQuery();
 
   useEffect(() => {
-    socket.on("friendRequestReceived", () => {
-      console.log("friendRequestReceived", data);
-      if (data) {
+    socket.on(Events.FRIEND_REQUEST_RECEIVED, (data) => {
+      if (data.from) {
         refetch();
       }
     });
+
     return () => {
-      socket.off("friendRequestReceived");
+      socket.off(Events.FRIEND_REQUEST_RECEIVED);
     };
-  }, [data, refetch]);
+  }, []);
 
   return (
     <div className="card">
-      <p className="mb-4 font-bold">FriendRequests</p>
-      <div className="space-y-4">{renderFriendRequestItems()}</div>
-      {/* <FriendRequestItems fullName={"SSS"} /> */}
+      <p className="mb-4 font-bold">Friend Requests</p>
+      <div className="space-y-4">
+        {data.slice(0, 3).map((user) => (
+          <FriendRequestItem
+            key={user._id}
+            fullName={user.fullName}
+            id={user._id}
+          />
+        ))}
+      </div>
     </div>
   );
 };
-
 export default FriendRequests;

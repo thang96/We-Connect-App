@@ -1,9 +1,6 @@
 const MessagePage = () => {
   return (
-    <>
-      <div className=""></div>
-    </>
-  );
-};
-
-export default MessagePage;
+    <div>MessagePage</div>
+  )
+}
+export default MessagePage

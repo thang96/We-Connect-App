@@ -1,22 +1,21 @@
 import { DialogTitle, IconButton, Dialog as MUIDialog } from "@mui/material";
 import { closeDialog } from "@redux/slices/dialogSlice";
 import { useDispatch, useSelector } from "react-redux";
-
 import { Close } from "@mui/icons-material";
-import NewPostDialog from "./config/NewPostDialog";
+import NewPostDialog from "./configs/NewPostDialog";
 
-const DynamicContent = ({ contentType, addtionalData }) => {
+const DynamicContent = ({ contentType, additionalData }) => {
   switch (contentType) {
     case "NEW_POST_DIALOG":
-      return <NewPostDialog userInfo={addtionalData} />;
+      return <NewPostDialog userInfo={additionalData} />;
 
     default:
-      break;
+      return <p></p>;
   }
 };
 
 const Dialog = () => {
-  const dialog = useSelector((store) => store.dialog);
+  const dialog = useSelector((state) => state.dialog);
   const dispatch = useDispatch();
 
   return (
@@ -29,15 +28,14 @@ const Dialog = () => {
       <DialogTitle className="flex items-center justify-between border-b">
         {dialog.title}
         <IconButton onClick={() => dispatch(closeDialog())}>
-          <Close color="action" />
+          <Close />
         </IconButton>
       </DialogTitle>
       <DynamicContent
         contentType={dialog.contentType}
-        addtionalData={dialog.addtionalData}
+        additionalData={dialog.additionalData}
       />
     </MUIDialog>
   );
 };
-
 export default Dialog;

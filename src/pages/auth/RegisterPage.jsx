@@ -1,31 +1,32 @@
 import FormField from "@components/FormField";
-import TextInput from "@components/FormInput/TextInput";
-import { Alert, Button, CircularProgress } from "@mui/material";
-import { openSnackBar } from "@redux/slices/snackbarSlice";
+import TextInput from "@components/FormInputs/TextInput";
+import { Alert, Button } from "@mui/material";
+import { openSnackbar } from "@redux/slices/snackbarSlice";
 import { useRegisterMutation } from "@services/rootApi";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { object, string } from "yup";
+import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const [register, { data = {}, isLoading, isError, error, isSuccess }] =
+  const dispatch = useDispatch();
+  const [register, { data = {}, isLoading, error, isError, isSuccess }] =
     useRegisterMutation();
-  const formSchema = object()
-    .shape({
-      fullName: string().required("Full Name không được để trống"),
-      email: string()
-        .matches(
-          /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/,
-          "Địa chỉ email không đúng",
-        )
-        .required(),
-      password: string().required("Password không được để trống"),
-    })
-    .required();
+
+  const formSchema = yup.object().shape({
+    fullName: yup.string().required(),
+    email: yup
+      .string()
+      .matches(
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Email is not valid",
+      )
+      .required(),
+    password: yup.string().required(),
+  });
 
   const {
     control,
@@ -34,68 +35,59 @@ const RegisterPage = () => {
   } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-    },
+      fullName: '',
+      email: '',
+      password: ''
+    }
   });
 
-  const dispatch = useDispatch();
-
-  const onSubmit = (formData) => {
+  function onSubmit(formData) {
     register(formData);
-  };
+  }
 
   useEffect(() => {
     if (isSuccess) {
-      dispatch(openSnackBar({ message: data?.message }));
+      dispatch(openSnackbar({ message: data.message }));
       navigate("/login");
     }
-  }, [data, dispatch, isSuccess, navigate]);
+  }, [isSuccess, data.message, navigate, dispatch]);
+
 
   return (
     <div>
       <p className="mb-5 text-center text-2xl font-bold">Register</p>
-      <form
-        className="flex flex-col gap-4"
-        action=""
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
         <FormField
-          name={"fullName"}
-          label={"Full Name"}
+          name="fullName"
+          label="Full Name"
           control={control}
           Component={TextInput}
-          error={errors.fullName}
+          error={errors["fullName"]}
         />
         <FormField
-          name={"email"}
-          label={"Email"}
+          name="email"
+          label="Email"
           control={control}
           Component={TextInput}
-          error={errors.email}
+          error={errors["email"]}
         />
         <FormField
-          name={"password"}
-          label={"Password"}
+          name="password"
+          label="Password"
           control={control}
-          Component={TextInput}
           type="password"
-          error={errors.password}
+          Component={TextInput}
+          error={errors["password"]}
         />
-        <Button disabled={isLoading} type="submit" variant="contained">
-          {isLoading ? <CircularProgress size={"16px"} color="inherit" /> : "Sign up"}
+        <Button variant="contained" type="submit">
+          Sign up
         </Button>
-        {isError && <Alert severity="error">{error.data.message}</Alert>}
+        {isError && <Alert severity="error">{error?.data?.message}</Alert>}
       </form>
       <p className="mt-4">
-        Already have an account?{" "}
-        <Link to={"/login"} className="text-[15px] text-[#246AA3]">
-          Sign in instead
-        </Link>
+        Already have an account? <Link to="/login">Sign in instead</Link>
       </p>
     </div>
   );
 };
-
 export default RegisterPage;

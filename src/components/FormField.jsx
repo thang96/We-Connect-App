@@ -1,22 +1,21 @@
 import { FormHelperText } from "@mui/material";
 import { Controller } from "react-hook-form";
 
-const FormField = ({ control, label, name, Component, type, error }) => {
+const FormField = ({ control, label, name, type, error, Component }) => {
   return (
-    <div className="">
-      <p className="text-dark-100 mb-1 text-sm font-bold">{label}</p>
+    <div>
+      <p className="mb-1 text-sm font-bold text-dark-100">{label}</p>
       <Controller
         name={name}
         control={control}
-        render={({ field: { onChange, value = "", name } }) => {
-          // Ensure value is always defined
+        render={({ field: { onChange, value, name } }) => {
           return (
             <Component
               onChange={onChange}
               value={value}
               name={name}
-              control={control}
               type={type}
+              control={control}
               error={error?.message}
             />
           );
@@ -28,5 +27,4 @@ const FormField = ({ control, label, name, Component, type, error }) => {
     </div>
   );
 };
-
 export default FormField;

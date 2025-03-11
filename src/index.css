@@ -1,20 +1,14 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  background-color: #f8f7fa;
-}
-
-@theme {
-  --color-dark-100: #48465c;
-  --color-dark-200: #f8f7fa;
-  --color-dark-300: #dbdade;
-  --color-dark-400: #909090;
-  --color-primary-main: #246aa3;
+  font-family: "Public Sans Variable", sans-serif;
 }
 
 @layer components {
   .card {
-    @apply rounded bg-white !p-4 shadow;
+    @apply rounded bg-white p-4 shadow;
   }
 
   .container {

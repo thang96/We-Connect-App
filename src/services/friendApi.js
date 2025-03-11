@@ -13,32 +13,22 @@ export const friendApi = rootApi.injectEndpoints({
             },
           };
         },
-        invalidatesTags: (result, error, args) => [
-          { type: "Users", id: args },
-          { type: "FriendPendingRequest", id: "LIST" },
-        ], // Invalidate the Users tag
+        invalidatesTags: (result, error, args) => [{ type: "USERS", id: args }],
       }),
-
-      getPenddingFriendRequest: builder.query({
-        query: () => {
-          return {
-            url: "/friends/pending",
-            method: "get",
-          };
-        },
+      getPendingFriendRequests: builder.query({
+        query: () => "/friends/pending",
         providesTags: (result) =>
           result
             ? [
                 ...result.map(({ _id }) => ({
-                  type: "FriendPendingRequest",
+                  type: "PENDING_FRIEND_REQUEST",
                   id: _id,
                 })),
-                { type: "FriendPendingRequest", id: "LIST" },
+                { type: "PENDING_FRIEND_REQUEST", id: "LIST" },
               ]
-            : [{ type: "FriendPendingRequest", id: "LIST" }],
+            : [{ type: "PENDING_FRIEND_REQUEST", id: "LIST" }],
       }),
-
-      accepntFriendRequest: builder.mutation({
+      acceptFriendRequest: builder.mutation({
         query: (userId) => {
           return {
             url: "/friends/accept",
@@ -49,11 +39,10 @@ export const friendApi = rootApi.injectEndpoints({
           };
         },
         invalidatesTags: (result, error, args) => [
-          { type: "Users", id: args },
-          { type: "FriendPendingRequest", id: "LIST" },
-        ], // Invalidate the Users and FriendPendingRequest tags
+          { type: "USERS", id: args },
+          { type: "PENDING_FRIEND_REQUEST", id: args },
+        ],
       }),
-
       cancelFriendRequest: builder.mutation({
         query: (userId) => {
           return {
@@ -65,9 +54,9 @@ export const friendApi = rootApi.injectEndpoints({
           };
         },
         invalidatesTags: (result, error, args) => [
-          { type: "Users", id: args },
-          { type: "FriendPendingRequest", id: "LIST" },
-        ], // Invalidate the Users and FriendPendingRequest tags
+          { type: "USERS", id: args },
+          { type: "PENDING_FRIEND_REQUEST", id: args },
+        ],
       }),
     };
   },
@@ -75,7 +64,7 @@ export const friendApi = rootApi.injectEndpoints({
 
 export const {
   useSendFriendRequestMutation,
-  useGetPenddingFriendRequestQuery,
-  useAccepntFriendRequestMutation,
+  useGetPendingFriendRequestsQuery,
+  useAcceptFriendRequestMutation,
   useCancelFriendRequestMutation,
-} = rootApi;
+} = friendApi;

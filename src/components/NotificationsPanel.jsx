@@ -37,6 +37,12 @@ const NotificationsPanel = () => {
       {(data?.notifications || []).map((notification) => (
         <MenuItem key={notification._id} className="flex !justify-between">
           <p>{generateNotificationMessage(notification)}</p>
+          {/* {!notification.like && (
+            <p>{notification?.author?.fullName} liked a post</p>
+          )}
+          {!notification.comment && (
+            <p>{notification?.author?.fullName} comment a post</p>
+          )} */}
           {!notification.seen && (
             <Circle fontSize="10px" className="text-primary-main" />
           )}

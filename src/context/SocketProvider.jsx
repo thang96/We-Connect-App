@@ -60,6 +60,7 @@ const SocketProvider = ({ children }) => {
 
       dispatch(
         rootApi.util.updateQueryData("getNotifications", undefined, (draft) => {
+          //unshift : thêm mới data vào đầu danh sách
           draft.notifications.unshift(data);
         }),
       );

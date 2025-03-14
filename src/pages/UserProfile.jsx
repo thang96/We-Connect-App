@@ -1,8 +1,3 @@
-// import FriendRequests from "@components/FriendRequests";
-// import PostCreation from "@components/PostCreation";
-// import PostList from "@components/PostList";
-// import Sidebar from "@components/Sidebar";
-
 import { Avatar, Tab, Tabs } from "@mui/material";
 import { theme } from "@configs/muiConfig";
 import PostCreation from "@components/PostCreation";

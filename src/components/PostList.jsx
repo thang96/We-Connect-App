@@ -29,7 +29,6 @@ const PostList = () => {
           isLiked={post.likes.some((like) => like.author?._id === _id)}
           onLike={async (postId) => {
             const res = await likePost(postId).unwrap();
-
             createNotification({
               receiverUserId: post.author?._id,
               postId: post._id,
@@ -39,7 +38,6 @@ const PostList = () => {
           }}
           onComment={async ({ comment, postId }) => {
             const res = await createComment({ comment, postId }).unwrap();
-
             createNotification({
               receiverUserId: post.author?._id,
               postId: post._id,

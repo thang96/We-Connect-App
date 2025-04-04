@@ -4,18 +4,18 @@ const initialState = {
   open: false,
   maxWidth: "xs",
   fullWidth: true,
-  title: "",
+  title: null,
   contentType: null,
+  additionalData: {},
   actions: null,
-  addtionalData:{}
 };
 
 export const dialogSlice = createSlice({
   name: "dialog",
-  initialState: initialState,
+  initialState,
   reducers: {
     openDialog: (state, action) => {
-      return { ...state, ...action.payload,};
+      return { ...state, ...action.payload, open: true };
     },
     closeDialog: () => {
       return initialState;

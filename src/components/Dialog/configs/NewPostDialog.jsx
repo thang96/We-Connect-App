@@ -1,4 +1,4 @@
-import ImageUploader from "@components/ImageUploader";
+import { ImageUploader } from "@components/PostCreation";
 import {
   Avatar,
   Button,
@@ -8,66 +8,69 @@ import {
   TextareaAutosize,
 } from "@mui/material";
 import { closeDialog } from "@redux/slices/dialogSlice";
-import { openSnackBar } from "@redux/slices/snackbarSlice";
+import { openSnackbar } from "@redux/slices/snackbarSlice";
 import { useCreatePostMutation } from "@services/postApi";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 const NewPostDialog = ({ userInfo }) => {
-  const [createNewPost, { isLoading }] = useCreatePostMutation();
-  const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
+  const [createNewPost, { data, isSuccess, isLoading }] =
+    useCreatePostMutation();
+
   const dispatch = useDispatch();
 
-  const hanlderCreateNewPost = async () => {
-    const formData = new FormData();
-    formData.append("content", content);
-    formData.append("image", image);
+  const [content, setContent] = useState("");
+
+  const handleCreateNewPost = async () => {
     try {
+      const formData = new FormData();
+      formData.append("content", content);
+      formData.append("image", image);
+
       await createNewPost(formData).unwrap();
-      setContent("");
-      setImage(null);
       dispatch(closeDialog());
-      dispatch(openSnackBar({ message: "Create Post Successfully" }));
+      dispatch(openSnackbar({ message: "Create Post Successfully!" }));
     } catch (error) {
-      dispatch(openSnackBar({ type: "error", message: error?.data?.message }));
+      dispatch(openSnackbar({ type: "error", message: error?.data?.message }));
     }
   };
+
   const isValid = !!(content || image);
+
   return (
     <div>
       <DialogContent>
         <div className="flex items-center gap-2">
-          <Avatar className="!bg-primary-main !h-[32px] !w-[32px]">
-            {userInfo.fullName?.[0].toUpperCase()}
+          <Avatar
+            className="!bg-primary-main"
+            sx={{ width: "32px", height: "32px" }}
+          >
+            {userInfo.fullName?.[0]?.toUpperCase()}
           </Avatar>
-          {userInfo.fullName}
+          <p className="font-bold">{userInfo.fullName}</p>
         </div>
         <TextareaAutosize
           minRows={3}
           placeholder="What's on your mind?"
-          className="border-dark-100 mt-4 w-full rounded border p-2"
+          className="mt-4 w-full p-2"
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
         <ImageUploader image={image} setImage={setImage} />
       </DialogContent>
-      <DialogActions className="!px-6 !pt-0 !pb-5">
+      <DialogActions className="!px-6 !pb-5 !pt-0">
         <Button
-          disabled={!isValid}
-          onClick={hanlderCreateNewPost}
           fullWidth
+          disabled={!isValid}
           variant="contained"
+          onClick={handleCreateNewPost}
         >
-          {isLoading ? (
-            <CircularProgress size={"16px"} color="inherit" />
-          ) : (
-            "Post"
-          )}
+          {isLoading && <CircularProgress size="16px" className="mr-1" />}
+          Post
         </Button>
       </DialogActions>
     </div>
   );
 };
-
 export default NewPostDialog;

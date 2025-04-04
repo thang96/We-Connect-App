@@ -1,15 +1,19 @@
-import Loading from "@components/Loading";
-import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
+import { Suspense } from "react";
 // Supports weights 100-900
 import "@fontsource-variable/public-sans";
 import { Alert, Snackbar } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { closeSnackBar } from "@redux/slices/snackbarSlice";
+import { closeSnackbar } from "@redux/slices/snackbarSlice";
+import Loading from "@components/Loading";
 
 const RootLayout = () => {
-  const { message, open, type } = useSelector((state) => state.snackbar);
   const dispatch = useDispatch();
+
+  const { open, type, message } = useSelector((state) => {
+    // console.log("RootLayout", state);
+    return state.snackbar;
+  });
 
   return (
     <div className="text-dark-100">
@@ -18,10 +22,8 @@ const RootLayout = () => {
       </Suspense>
       <Snackbar
         open={open}
-        autoHideDuration={3000}
-        onClose={() => {
-          dispatch(closeSnackBar());
-        }}
+        autoHideDuration={4000}
+        onClose={() => dispatch(closeSnackbar())}
       >
         <Alert severity={type} variant="filled" sx={{ width: "100%" }}>
           {message}
@@ -30,5 +32,4 @@ const RootLayout = () => {
     </div>
   );
 };
-
 export default RootLayout;

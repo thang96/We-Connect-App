@@ -1,12 +1,11 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import authSlice from "@redux/slices/authSlice";
-import { rootApi } from "@services/rootApi";
+import authReducer from "@redux/slices/authSlice";
 import snackbarReducer from "@redux/slices/snackbarSlice";
 import settingsReducer from "@redux/slices/settingsSlice";
 import dialogReducer from "@redux/slices/dialogSlice";
-import storage from "redux-persist/lib/storage";
+import { rootApi } from "@services/rootApi";
+import storage from "redux-persist/lib/storage"; // localStorage
 import {
-  persistStore,
   persistReducer,
   FLUSH,
   REHYDRATE,
@@ -14,8 +13,9 @@ import {
   PERSIST,
   PURGE,
   REGISTER,
+  persistStore,
 } from "redux-persist";
-import { logoutMiddleware } from "./middlewares";
+import { logOutMiddleware } from "./middlewares";
 import { setupListeners } from "@reduxjs/toolkit/query";
 
 const persistConfig = {
@@ -26,15 +26,15 @@ const persistConfig = {
     rootApi.reducerPath,
     // dialogReducer.reducerPath,
     // settingsReducer.reducerPath,
-    "settings",
     "dialog",
+    "settings",
   ],
 };
 
 const persistedReducer = persistReducer(
   persistConfig,
   combineReducers({
-    auth: authSlice,
+    auth: authReducer,
     snackbar: snackbarReducer,
     settings: settingsReducer,
     dialog: dialogReducer,
@@ -49,10 +49,10 @@ export const store = configureStore({
       serializableCheck: {
         ignoreActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(logoutMiddleware, rootApi.middleware);
+    }).concat(logOutMiddleware, rootApi.middleware);
   },
 });
-// setup to listen when page is refetchOnFocus or refetchOnReconnect...
+
 setupListeners(store.dispatch);
 
 export const persistor = persistStore(store);

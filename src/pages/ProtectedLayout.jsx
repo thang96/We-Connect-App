@@ -1,35 +1,45 @@
-import Header from "@components/Headers";
+import Header from "@components/Header";
 import Loading from "@components/Loading";
 import SocketProvider from "@context/SocketProvider";
-import { saveUseInfo } from "@redux/slices/authSlice";
+import { saveUserInfo } from "@redux/slices/authSlice";
 import { useGetAuthUserQuery } from "@services/rootApi";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Outlet } from "react-router-dom";
 
 const ProtectedLayout = () => {
-  const responce = useGetAuthUserQuery();
+  const response = useGetAuthUserQuery();
   const dispatch = useDispatch();
-  useEffect(() => {
-    if (responce.isSuccess) {
-      dispatch(saveUseInfo(responce.data));
-    }
-  }, [responce.isSuccess, responce.data, dispatch]);
+  // endpoint name + params
 
-  if (responce.isLoading) {
+  useEffect(() => {
+    if (response.isSuccess) {
+      dispatch(saveUserInfo(response.data));
+    }
+  }, [response.isSuccess, response.data, dispatch]);
+
+  if (response.isLoading) {
     return <Loading />;
   }
 
-  return responce.data ? (
+  /*
+  isLoading: no chi set thanh true o lan query dau tien
+  isFetching: no chi set thanh true o lan query dau tien va khi API duoc refetch
+  */
+
+  // if (!response?.data?._id) {
+  //   return <Navigate to="/login" />;
+  // }
+
+  return (
     <SocketProvider>
-      <div className="bg-dark-200">
+      <div>
         <Header />
-        <Outlet />
+        <div className="bg-dark-200">
+          <Outlet />
+        </div>
       </div>
     </SocketProvider>
-  ) : (
-    <div></div>
   );
 };
-
 export default ProtectedLayout;

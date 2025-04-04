@@ -1,20 +1,26 @@
 import { createEntityAdapter } from "@reduxjs/toolkit";
 import { rootApi } from "./rootApi";
 
-/*
-Entity Adapter giúp quán lý dữ liệu ở ngay trong redux và nó sẽ giúp
-tiêu chuẩn hóa dữ liệu theo dạng 
-{
-  ids: [1, 2], entities: [{id: 1, content: 'abc'}, [{id: 2, content: 'xyz'},]
-}
-  nó cũng cung cấp thêm các methods để dễ dàng cập nhật dữ liệu được chuẩn hóa
-  và tránh trùng lặp dữ liệu và tạo nơi lưu trữ dữ liệu tập chung
-*/
-const postsAdapter = createEntityAdapter({
+export const postsAdapter = createEntityAdapter({
   selectId: (post) => post._id,
   sortComparer: (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
 });
+
 const initialState = postsAdapter.getInitialState();
+
+// { ids: [], entities: []}
+
+/*
+ Entity Adapter giup quan ly du lieu o ngay trong redux va 
+ no se giup chuan hoa du lieu theo dang
+ {
+  ids: [1, 3], entities: [{id: 1, content: '123'},{id: 3, content: 'abc'}]
+ }
+  cung cap them cho chung ta cac methods de de dang cap nhat xoa sua du lieu ma da duoc chuan hoa o phia tren
+  no se giup chung ta chuan hoa du lieu + tranh bi trung lap du lieu. va lam cho ung dung cua chung ta se 
+  luu tru du lieu tap trung, thay vi phai tao ra cac state nhu posts (useLazyLoadPost). luon luon chi 
+  co 1 nguon du lieu duy nhat hay con goi la single source of truth 
+*/
 
 export const postApi = rootApi.injectEndpoints({
   endpoints: (builder) => {
@@ -31,6 +37,7 @@ export const postApi = rootApi.injectEndpoints({
           args,
           { dispatch, queryFulfilled, getState },
         ) => {
+
           const store = getState();
           const tempId = crypto.randomUUID();
           const newPost = {
@@ -40,8 +47,8 @@ export const postApi = rootApi.injectEndpoints({
             content: args.get("content"),
             author: {
               notifications: [],
-              _id: store.auth.useInfo._id,
-              fullName: store.auth.useInfo.fullName,
+              _id: store.auth.userInfo._id,
+              fullName: store.auth.userInfo.fullName,
             },
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -49,8 +56,7 @@ export const postApi = rootApi.injectEndpoints({
           };
 
           const patchResult = dispatch(
-            rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
-              // draft.unshift(newPost);
+            rootApi.util.updateQueryData("getPosts", "allPosts", (draft) => {
               postsAdapter.addOne(draft, newPost);
             }),
           );
@@ -58,28 +64,21 @@ export const postApi = rootApi.injectEndpoints({
           try {
             const { data } = await queryFulfilled;
             dispatch(
-              rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
-                // const index = draft.findIndex((post) => post._id === tempId);
-                // if (index !== -1) {
-                // draft[index] = data;
-                // }
+              rootApi.util.updateQueryData("getPosts", "allPosts", (draft) => {
                 postsAdapter.removeOne(draft, tempId);
                 postsAdapter.addOne(draft, data);
               }),
             );
-          } catch (error) {
-            dispatch(openSnackBar({ message: error?.message }));
+          } catch (err) {
             patchResult.undo();
           }
-        },
-        // invalidatesTags: ["Post"],
-      }),
 
-      getPost: builder.query({
+        },
+      }),
+      getPosts: builder.query({
         query: ({ limit, offset } = {}) => {
           return {
             url: "/posts",
-            method: "GET",
             params: { limit, offset },
           };
         },
@@ -88,13 +87,12 @@ export const postApi = rootApi.injectEndpoints({
         },
         serializeQueryArgs: () => "allPosts",
         merge: (currentCache, newItems) => {
-          //Gộp dữ liệu trước đó với dữ liệu mới sau này, nó luôn đảm bảo
-          //dữ liệu sẽ không bị duplicate vì có 1 hệ thống ids duy nhất
+          // gop du lieu tu request truoc do + voi du lieu moi sau nay, no luon dam bao (entity adapter)
+          // du lieu se ko bi duplicate boi vi no da co 1 he thong cac ids duy nhat
           return postsAdapter.upsertMany(currentCache, newItems.entities);
         },
-        providesTags: ["Post"], // Provide the Post tag
+        providesTags: [{ type: "POSTS" }],
       }),
-
       likePost: builder.mutation({
         query: (postId) => {
           return {
@@ -106,17 +104,32 @@ export const postApi = rootApi.injectEndpoints({
           args,
           { dispatch, queryFulfilled, getState },
         ) => {
+
           const store = getState();
           const tempId = crypto.randomUUID();
+          // const newPost = {
+          //   _id: tempId,
+          //   likes: [],
+          //   comments: [],
+          //   content: args.get("content2"),
+          //   author: {
+          //     notifications: [],
+          //     _id: store.auth.userInfo._id,
+          //     fullName: store.auth.userInfo.fullName,
+          //   },
+          //   createdAt: new Date().toISOString(),
+          //   updatedAt: new Date().toISOString(),
+          //   __v: 0,
+          // };
 
           const patchResult = dispatch(
-            rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
+            rootApi.util.updateQueryData("getPosts", "allPosts", (draft) => {
               const currentPost = draft.entities[args];
               if (currentPost) {
                 currentPost.likes.push({
                   author: {
-                    _id: store.auth.useInfo._id,
-                    fullName: store.auth.useInfo.fullName,
+                    _id: store.auth.userInfo._id,
+                    fullName: store.auth.userInfo.fullName,
                   },
                   _id: tempId,
                 });
@@ -126,21 +139,21 @@ export const postApi = rootApi.injectEndpoints({
 
           try {
             const { data } = await queryFulfilled;
+
             dispatch(
-              rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
-                let currentPost = draft.entities[args];
+              rootApi.util.updateQueryData("getPosts", "allPosts", (draft) => {
+                const currentPost = draft.entities[args];
                 if (currentPost) {
                   currentPost.likes = currentPost.likes.map((like) => {
                     if (like._id === tempId) {
                       return {
                         author: {
-                          _id: store.auth.useInfo._id,
-                          fullName: store.auth.useInfo.fullName,
+                          _id: store.auth.userInfo._id,
+                          fullName: store.auth.userInfo.fullName,
                         },
+                        createdAt: data.createdAt,
+                        updatedAt: data.updatedAt,
                         _id: data._id,
-                        createAt: data.createAt,
-                        updateAt: data.updateAt,
-                        post: data.post,
                       };
                     }
 
@@ -149,76 +162,22 @@ export const postApi = rootApi.injectEndpoints({
                 }
               }),
             );
-          } catch (error) {
-            dispatch(openSnackBar({ message: error?.message }));
+
+          } catch (err) {
             patchResult.undo();
           }
         },
       }),
-
-      unLikePost: builder.mutation({
+      unlikePost: builder.mutation({
         query: (postId) => {
           return {
             url: `/posts/${postId}/unlike`,
             method: "DELETE",
           };
         },
-        onQueryStarted: async (
-          args,
-          { dispatch, queryFulfilled, getState },
-        ) => {
-          const store = getState();
-          const tempId = crypto.randomUUID();
-
-          const patchResult = dispatch(
-            rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
-              const currentPost = draft.entities[args];
-              if (currentPost) {
-                currentPost.likes.push({
-                  author: {
-                    _id: store.auth.useInfo._id,
-                    fullName: store.auth.useInfo.fullName,
-                  },
-                  _id: tempId,
-                });
-              }
-            }),
-          );
-
-          try {
-            const { data } = await queryFulfilled;
-            dispatch(
-              rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
-                let currentPost = draft.entities[args];
-                if (currentPost) {
-                  currentPost.likes = currentPost.likes.map((like) => {
-                    if (like._id === tempId) {
-                      return {
-                        author: {
-                          _id: store.auth.useInfo._id,
-                          fullName: store.auth.useInfo.fullName,
-                        },
-                        _id: data._id,
-                        createAt: data.createAt,
-                        updateAt: data.updateAt,
-                        post: data.post,
-                      };
-                    }
-
-                    return like;
-                  });
-                }
-              }),
-            );
-          } catch (error) {
-            dispatch(openSnackBar({ message: error?.message }));
-            patchResult.undo();
-          }
-        },
       }),
-
       createComment: builder.mutation({
-        query: ({ comment, postId }) => {
+        query: ({ postId, comment }) => {
           return {
             url: `/posts/${postId}/comments`,
             method: "POST",
@@ -229,22 +188,22 @@ export const postApi = rootApi.injectEndpoints({
           params,
           { dispatch, queryFulfilled, getState },
         ) => {
-          const store = getState();
           const tempId = crypto.randomUUID();
+          const store = getState();
 
           const optimisticComment = {
             _id: tempId,
             comment: params.comment,
             author: {
-              _id: store.auth.useInfo._id,
-              fullName: store.auth.useInfo.fullName,
+              _id: store.auth.userInfo._id,
+              fullName: store.auth.userInfo.fullName,
             },
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
 
           const patchResult = dispatch(
-            rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
+            rootApi.util.updateQueryData("getPosts", "allPosts", (draft) => {
               const currentPost = draft.entities[params.postId];
 
               if (currentPost) {
@@ -256,19 +215,20 @@ export const postApi = rootApi.injectEndpoints({
           try {
             const { data } = await queryFulfilled;
             dispatch(
-              rootApi.util.updateQueryData("getPost", "allPosts", (draft) => {
+              rootApi.util.updateQueryData("getPosts", "allPosts", (draft) => {
                 const currentPost = draft.entities[params.postId];
                 if (currentPost) {
                   const commentIndex = currentPost.comments.findIndex(
                     (comment) => comment._id === tempId,
                   );
+
                   if (commentIndex !== -1) {
                     currentPost.comments[commentIndex] = data;
                   }
                 }
               }),
             );
-          } catch (error) {
+          } catch (err) {
             patchResult.undo();
           }
         },
@@ -279,8 +239,8 @@ export const postApi = rootApi.injectEndpoints({
 
 export const {
   useCreatePostMutation,
-  useGetPostQuery,
+  useGetPostsQuery,
   useLikePostMutation,
-  useUnLikePostMutation,
+  useUnlikePostMutation,
   useCreateCommentMutation,
 } = postApi;

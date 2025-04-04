@@ -1,9 +1,10 @@
-import { login, logout } from "@redux/slices/authSlice";
+import { login, logOut } from "@redux/slices/authSlice";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_BASE_URL,
   prepareHeaders: (headers, { getState }) => {
+    // console.log({ store: getState() });
     const token = getState().auth.accessToken;
 
     if (token) {
@@ -11,14 +12,16 @@ const baseQuery = fetchBaseQuery({
     }
     return headers;
   },
-  // mode: 'no-cors', // Added mode: 'no-cors' for development purposes
 });
 
-const baseQueryWithReAuth = async (args, api, extraOptions) => {
+const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
+  // console.log("baseQueryWithForceLogout", { result });
+
   if (result?.error?.status === 401) {
-    if (result?.error?.data?.messsage === "Token has expired") {
+    if (result?.error?.data?.message === "Token has expired.") {
       const refreshToken = api.getState().auth.refreshToken;
+
       if (refreshToken) {
         const refreshResult = await baseQuery(
           {
@@ -39,9 +42,10 @@ const baseQueryWithReAuth = async (args, api, extraOptions) => {
               refreshToken,
             }),
           );
+
           result = await baseQuery(args, api, extraOptions);
         } else {
-          api.dispatch(logout());
+          api.dispatch(logOut());
           window.location.href = "/login";
         }
       }
@@ -55,12 +59,11 @@ const baseQueryWithReAuth = async (args, api, extraOptions) => {
 
 export const rootApi = createApi({
   reducerPath: "api",
-  baseQuery: baseQueryWithReAuth,
-  tagTypes: ["Post", "Users", "FriendPendingRequest", "GetNotifications"],
-  // refetchOnMountOrArgChange: true,
-  // keepUnusedDataFor: 10,
-  // refetchOnFocus:true,
-  refetchOnReconnect: true,
+  baseQuery: baseQueryWithReauth,
+  tagTypes: ["POSTS", "USERS", "PENDING_FRIEND_REQUEST"],
+  // refetchOnMountOrArgChange: 10,
+  // refetchOnFocus: true,
+  // refetchOnReconnect: true,
   endpoints: (builder) => {
     return {
       register: builder.mutation({
@@ -72,7 +75,6 @@ export const rootApi = createApi({
           };
         },
       }),
-
       login: builder.mutation({
         query: ({ email, password }) => {
           return {
@@ -82,7 +84,6 @@ export const rootApi = createApi({
           };
         },
       }),
-
       verifyOTP: builder.mutation({
         query: ({ email, otp }) => {
           return {
@@ -92,7 +93,6 @@ export const rootApi = createApi({
           };
         },
       }),
-
       refreshToken: builder.mutation({
         query: (refreshToken) => {
           return {
@@ -102,30 +102,25 @@ export const rootApi = createApi({
           };
         },
       }),
-
       getAuthUser: builder.query({
-        query: () => {
-          return `/auth-user`;
-        },
+        query: () => "/auth-user",
       }),
-
       searchUsers: builder.query({
         query: ({ limit, offset, searchQuery } = {}) => {
-          const encodeQuery = encodeURIComponent(searchQuery.trim());
+          const encodedQuery = encodeURIComponent(searchQuery.trim());
           return {
-            url: `/search/users/${encodeQuery}`,
-            method: "GET",
+            url: `/search/users/${encodedQuery}`,
+            // method: 'GET',
             params: { limit, offset },
           };
         },
         providesTags: (result) =>
           result
             ? [
-                ...result.users.map(({ _id }) => ({ type: "Users", id: _id })),
-                { type: "Users", id: "LIST" },
-                { type: "FriendPendingRequest", id: "LIST" },
+                ...result.users.map(({ _id }) => ({ type: "USERS", id: _id })),
+                { type: "USERS", id: "LIST" },
               ]
-            : [{ type: "Users", id: "LIST" }],
+            : [{ type: "USERS", id: "LIST" }],
       }),
     };
   },
@@ -133,9 +128,9 @@ export const rootApi = createApi({
 
 export const {
   useRegisterMutation,
-  useLoginMutation,
+  useLoginMutation, 
   useVerifyOTPMutation,
-  useRefreshTokenMutation,
   useGetAuthUserQuery,
+  useRefreshTokenMutation,
   useSearchUsersQuery,
 } = rootApi;
